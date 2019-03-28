@@ -1,0 +1,60 @@
+<div class="interactive-container offset">
+
+    {{#settings}}
+    <div class="row">
+
+        {{#if title}}
+        <div class="choloropleth_title_block">
+            <h2>{{title}}</h2>
+            <div class="subtitle">{{subtitle}}</div>
+        </div>
+        {{/if}}
+        <div id="controls" class="main-col">
+                <div class="row">
+                <div class="selectorBox col50">
+                    <div class="keyText">Currently showing</div>
+
+                    <select id="statChooser" value='{{currentKey}}'>
+                        {{#keys}}
+                            <option value='{{this}}'>{{this}}</option>
+                        {{/keys}}
+                    </select>
+
+
+                </div>
+                <div class="keyBox col50">
+                    <div class="keyText">Key</div>
+                    <div id=keyContainer></div>
+                </div>
+                </div>
+        </div>
+    </div>
+    <div id="mapContainer">
+            <div id="zoomIn" class="zoomButtons">+</div>
+            <div id="zoomOut" class="zoomButtons">–</div>
+    </div>
+
+    <div class="row notes">
+
+        <div class="main-col">
+
+            {{#if source}}
+            <h2>Notes</h2>
+            <div class="row">
+                {{{footnote}}}
+            </div>
+            {{/if}}
+
+            {{#if source}}
+                <div class="row">
+                    <small>Source: {{{source}}}</small>
+                </div>
+            {{/if}}
+
+
+        </div>
+
+    </div>
+
+    {{/settings}}
+</div>

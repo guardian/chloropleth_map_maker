@@ -1,0 +1,175 @@
+@import "mq";
+
+.interactive-container {
+
+	.choloropleth_title_block {
+		width: 100%;
+		padding: 20px;
+	}
+	
+	#mapContainer {
+		position: relative; 
+		width:100%;
+		min-height:300px;
+	}
+
+	.sa2:hover {
+		opacity:0.8;
+	}	
+
+/*	.active {
+		fill:#4bc6df;
+	}*/
+
+	.graticule {
+		fill: none;
+		stroke: #efefef;
+		stroke-opacity:1;
+	}
+
+	.mesh {
+		fill: none;
+  		stroke: #fff;
+	}
+
+	.keyText {
+		font-family: 'Guardian Text Sans Web',Arial;
+		font-weight: bold;
+		font-size:14px;
+		margin-bottom:10px;
+	}
+
+	.placeText {
+		font-family: 'Guardian Text Sans Web',Arial;
+		fill: #000000;
+	}
+
+	.keyLabel {
+		font-family: 'Guardian Text Sans Web',Arial;
+		font-size:10px;
+		fill:#767676;
+	}
+
+	#statusMessage {
+		position: absolute;
+		top:20%;
+		left:49%;
+		pointer-events: none;
+	}
+
+	.zoomButtons {
+		width:25px;
+		height:25px;
+		border-radius: 25px;
+		font-size:25px;
+		line-height:25px;
+		background-color: #bdbdbd;
+		text-align: center;
+		cursor: pointer;
+		font-weight: bold;
+	}
+
+	#zoomIn {
+		position: absolute;
+		top:20px;
+		left:2%;
+	}
+
+	#zoomOut {
+		position: absolute;
+		top:50px;
+		left:2%;
+	}
+
+	.btn {
+			width:auto;
+			margin-left:5px; 		
+			border-radius: 16px;
+			text-align: center;
+			padding: 5px 10px;
+			line-height:1em; 
+			font-family: "Guardian Agate Sans", Arial, sans-serif;
+			overflow:hidden;
+			color: #FFFFFF;
+			background-color: #bdbdbd;
+			display: inline-block;
+	}
+
+	.col50 {
+		float:left;
+		width:48%;
+		margin-left:1%; 
+	}
+
+	.row {
+		margin-bottom:5px; 
+	}
+
+	.row:after {
+		content: " "; /* Older browser do not support empty content */
+		visibility: hidden;
+		display: block;
+		height: 0;
+		clear: both;
+	}
+
+/*	.main-col {
+		max-width: 38.75rem;
+		position: relative;
+		float: left;
+	}
+*/
+	.main-col {
+		max-width: 38.75rem;
+		margin-left:1.25rem; 
+		position: relative;
+		display: block;
+		float: none;
+	}
+
+	@media (min-width: 1140px) {
+	.main-col {
+		margin-left:8.25rem;
+		width:560px;
+		float: left;
+		}  
+	}
+
+	@media (min-width: 1300px) {
+		.main-col {
+			margin-left: 13.25rem;
+			width:640px;
+			float: left;
+		} 
+	}
+
+
+	@media (max-width: 600px) {
+
+	.col10, .col20, .col30, .col40, .col50, .col60, .col70, .col80, .col90 {
+	width:100%;
+	margin:0;
+	}
+
+	}
+
+	#statChooser {
+		opacity:1;
+		margin-bottom:10px;
+		float:left;
+		max-width:250px;
+	}
+
+	#keyContainer {
+		float: left;
+	}
+
+	.tooltip {
+		background: #FFFFFF;
+		max-width:200px;
+		font-family: 'Guardian Text Sans Web',Arial;
+		padding:10px;
+		pointer-events: none;
+	}	
+
+}
