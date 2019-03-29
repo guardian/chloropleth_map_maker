@@ -9,9 +9,14 @@
             <div class="subtitle">{{subtitle}}</div>
         </div>
         {{/if}}
+        
         <div id="controls" class="main-col">
-                <div class="row">
+
+            <div class="row">
+
                 <div class="selectorBox col50">
+
+                    {{#if dropdown}}
                     <div class="keyText">Currently showing</div>
 
                     <select id="statChooser" value='{{currentKey}}'>
@@ -19,16 +24,25 @@
                             <option value='{{this}}'>{{this}}</option>
                         {{/keys}}
                     </select>
+                    {{/if}}
 
 
                 </div>
+
                 <div class="keyBox col50">
-                    <div class="keyText">Key</div>
+
+                    <div class="keyText"></div>
+
                     <div id=keyContainer></div>
+
                 </div>
-                </div>
+
+            </div>
+
         </div>
+
     </div>
+
     <div id="mapContainer">
             <div id="zoomIn" class="zoomButtons">+</div>
             <div id="zoomOut" class="zoomButtons">–</div>

@@ -19,9 +19,33 @@ export class Choropleth {
 
         this.boundaryID = id
 
+        this.toolbelt = new Toolbelt()
+
+        /*
+        Create a set of keys based on the JSON from the Googledoc data table
+        */
+
         this.database.keys = Object.keys( this.database.data[0] )
 
+        /*
+        Remove the ID column which is going to be used to map 
+        items to their corresponding 
+        boundaries in the topojson
+        */
+
         this.database.keys = this.database.keys.filter(key => key !== 'id')
+
+        /*
+        Specify if the graphic requires a dropdown menu
+        based on whether the Google doc contains more
+        than one column (excluding the ID column)
+        */
+
+        this.database.dropdown = (this.database.keys.length > 1) ? true : false ;
+
+        /*
+        Convert all the data to intergers
+        */
 
         this.database.data.forEach( item => {
 
@@ -33,7 +57,15 @@ export class Choropleth {
 
         });
 
+        /*
+        Get the name of the topojson object
+        */
+
         this.database.topoKey = Object.keys( this.boundaries.objects )[0]
+
+        /*
+        Merge the row data from the Googledoc data table to its corresponding boundary
+        */
 
         this.boundaries.objects[this.database.topoKey].geometries.forEach( item => {
 
@@ -41,7 +73,13 @@ export class Choropleth {
 
         });
 
-        this.database.currentKey = this.database.keys[0]
+        /*
+        Check if the default column has been specified in the Googledoc 
+        and if it has been specified check that it actually exists. 
+        If not use the first column after the ID column
+        */
+
+        this.database.currentKey = (self.database.keys.indexOf(self.database.settings[0].colourBy) > -1) ? self.database.settings[0].colourBy : self.database.keys[0] ;
 
         this.isAndroidApp = (window.location.origin === "file://" && /(android)/i.test(navigator.userAgent) ) ? true : false ;  
 
@@ -77,11 +115,63 @@ export class Choropleth {
 
         var self = this
 
-        this.keyColors = ['#4575b4', '#6691c3', '#86add2', '#a7c9e1', '#cde5f0', '#ffeaab', '#ffbe84']
+        this.scaleType = self.database.settings[0].scaleType.toLowerCase()
 
-        this.thresholds = [0, 1, 10, 100, 1000, 10000, 100000]
+        this.keyColors = self.database.key.map( (item) => item.colour);
 
-        this.color = d3.scaleThreshold().domain(self.thresholds).range(self.keyColors)
+        this.thresholds = self.database.key.map( (item) => item.value);
+
+        this.min = d3.min( self.database.data, (item) => item[self.database.currentKey]);
+
+        if (this.min > 0) {
+
+            this.min = 0
+
+        }
+
+        this.max = d3.max( self.database.data, (item) => item[self.database.currentKey]);
+
+        this.median = d3.median( self.database.data, (item) => item[self.database.currentKey]);
+
+        this.mean = d3.mean( self.database.data, (item) => item[self.database.currentKey]);
+
+        this.range = self.database.data.map( (item) => item[self.database.currentKey]);
+
+        if (this.scaleType === "threshold") {
+
+            this.color = d3.scaleThreshold().domain(self.thresholds).range(self.keyColors)
+
+        } else if (this.scaleType === "ordinal") {
+
+            this.color = d3.scaleOrdinal().range(self.keyColors)
+
+        } else if (this.scaleType === "linear median") { // Median
+
+            this.color = d3.scaleLinear().domain([self.min, self.median, self.max]).range(self.keyColors);
+
+        } else if (this.scaleType === "linear mean") { // Mean
+
+            this.color = d3.scaleLinear().domain([self.min, self.mean, self.max]).range(self.keyColors);
+
+        } else if (this.scaleType === "quantile") {
+
+            this.color = d3.scaleQuantile().domain(self.range).range(self.keyColors);
+
+        } else if (this.scaleType === "quantize") {
+
+            this.color = d3.scaleQuantize().domain(self.min, self.max).range(self.keyColors);
+
+        } else { // Linear by default
+
+            this.scaleType = "linear"
+
+            this.color = d3.scaleLinear().domain([self.min, self.max]).range(self.keyColors);
+
+        }
+
+        var output = `Scale type: ${this.scaleType}\nMin: ${this.min}\nMax: ${this.max}\nMedian: ${this.median}\nMean: ${this.mean}\n\n------------------`
+
+        console.log(output)
 
     }
 
@@ -104,26 +194,29 @@ export class Choropleth {
         
         this.keySquare = this.keyWidth / 10;
 
-        this.keyColors.forEach(function(d, i) {
+        if (this.scaleType === "threshold") {
 
-            self.keySvg.append("rect")
-                .attr("x", self.keySquare * i)
-                .attr("y", 0)
-                .attr("width", self.keySquare)
-                .attr("height", 15)
-                .attr("fill", d)
-                .attr("stroke", "#dcdcdc")
+            this.keyColors.forEach(function(d, i) {
 
-        })
+                self.keySvg.append("rect")
+                    .attr("x", self.keySquare * i)
+                    .attr("y", 0)
+                    .attr("width", self.keySquare)
+                    .attr("height", 15)
+                    .attr("fill", d)
+                    .attr("stroke", "#dcdcdc")
+            })
 
-        this.thresholds.forEach(function(d, i) {
+            this.thresholds.forEach(function(d, i) {
 
-            self.keySvg.append("text")
-                .attr("x", (i + 1) * self.keySquare)
-                .attr("text-anchor", "middle")
-                .attr("y", 30)
-                .attr("class", "keyLabel").text(d)
-        })
+                self.keySvg.append("text")
+                    .attr("x", (i + 1) * self.keySquare)
+                    .attr("text-anchor", "middle")
+                    .attr("y", 30)
+                    .attr("class", "keyLabel").text(d)
+            })
+
+        }
 
     }
 
@@ -202,7 +295,6 @@ export class Choropleth {
             .attr("fill", function(d) {
                 return self.color(d.properties[self.database.currentKey])
             })
-            .attr("data-tooltip", "Boom")
             .attr("d", path)
             .on("mouseover", tooltipIn)
             .on("mouseout", tooltipOut)
@@ -233,8 +325,7 @@ export class Choropleth {
         }
 
         function tooltipIn(d) {
-            var tooltipText = d3.select(this).attr('data-tooltip')
-            d3.select(".tooltip").html(`<b>${d.properties[self.boundaryID]}</b><br>Percent change: <b>${tooltipText}</b>`).style("visibility", "visible");
+            d3.select(".tooltip").html(self.toolbelt.mustache(self.database.settings[0].tooltip, d.properties)).style("visibility", "visible");
         }
 
         function tooltipOut(d) {
@@ -287,11 +378,7 @@ export class Choropleth {
             features.style("stroke-width", 0.5 / d3.event.transform.k + "px");
             features.attr("transform", d3.event.transform);
             features.selectAll(".placeContainers").style("display", function(d) {
-                if (d['properties']['scalerank'] < d3.event.transform.k) {
-                    return "block";
-                } else {
-                    return "none";
-                }
+                return (d['properties']['scalerank'] < d3.event.transform.k) ? "block" : "none" ;
             })
 
             features.selectAll(".placeText")
@@ -313,39 +400,7 @@ export class Choropleth {
         var self = this
 
         d3.selectAll(`.${self.database.topoKey}`).transition("changeFill")
-            .attr("fill", function(d) {
-                return self.color(d.properties[self.database.currentKey])
-            })
-
-        /*
-        d3.selectAll(`.${self.database.topoKey}`).attr("data-tooltip", function(d) {
-            if (typeof(newData[d.properties.E_div_numb]) != 'undefined' && newData[d.properties.E_div_numb] != null) {
-                return `${numberFormat(newData[d.properties.E_div_numb])}`
-            } else {
-                return "Unavailable"
-            }
-        })
-        */
-
-    }
-
-    numberFormat(num) {
-
-        if ( num > 0 ) {
-            if ( num > 1000000000 ) { return ( num / 1000000000 ).toFixed(1) + 'bn' }
-            if ( num > 1000000 ) { return ( num / 1000000 ).toFixed(1) + 'm' }
-            if (num % 1 != 0) { return num.toFixed(2) }
-            else { return num.toLocaleString() }
-        }
-
-        if ( num < 0 ) {
-            var posNum = num * -1;
-            if ( posNum > 1000000000 ) return [ "-" + String(( posNum / 1000000000 ).toFixed(1)) + 'bn'];
-            if ( posNum > 1000000 ) return ["-" + String(( posNum / 1000000 ).toFixed(1)) + 'm'];
-            else { return num.toLocaleString() }
-        }
-
-        return num;
+            .attr("fill", (d) => self.color(d.properties[self.database.currentKey]))
 
     }
 	

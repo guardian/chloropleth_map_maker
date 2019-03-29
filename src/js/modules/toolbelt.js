@@ -217,62 +217,6 @@ export class Toolbelt {
         return (check || isiPad ? true : false);
     }
 
-    supportsVideoType(type) {
-
-      let video;
-
-      // Allow user to create shortcuts, i.e. just "webm"
-      let formats = {
-        ogg: 'video/ogg; codecs="theora"',
-        h264: 'video/mp4; codecs="avc1.42E01E"',
-        webm: 'video/webm; codecs="vp8, vorbis"',
-        vp9: 'video/webm; codecs="vp9"',
-        hls: 'application/x-mpegURL; codecs="avc1.42E01E"'
-      };
-
-      if(!video) {
-
-        video = document.createElement('video')
-        
-      }
-
-      return video.canPlayType(formats[type] || type);
-    }
-
-    vidFileType() {
-
-        // Might be redundent now that most browsers surrpot MP4
-
-        let sUsrAg = navigator.userAgent;
-
-        if (sUsrAg.indexOf("Chrome") > -1) {
-
-            return "mp4";
-
-        } else if (sUsrAg.indexOf("Safari") > -1) {
-
-            return "mp4";
-
-        } else if (sUsrAg.indexOf("Opera") > -1) {
-
-            return "oggv";
-
-        } else if (sUsrAg.indexOf("Firefox") > -1) {
-
-            return "webm";
-
-        } else if (sUsrAg.indexOf("MSIE") > -1) {
-
-            return "webm";
-
-        } else {
-
-            return "mp4";
-
-        }
-
-    }
-
     temporalFormat(time) {   
         
         // Hours, minutes and seconds
@@ -401,5 +345,26 @@ export class Toolbelt {
         return (filter.test(email)) ?  true : false ;
 
     }
+
+    numberFormat(num) {
+
+        if ( num > 0 ) {
+            if ( num > 1000000000 ) { return ( num / 1000000000 ).toFixed(1) + 'bn' }
+            if ( num > 1000000 ) { return ( num / 1000000 ).toFixed(1) + 'm' }
+            if (num % 1 != 0) { return num.toFixed(2) }
+            else { return num.toLocaleString() }
+        }
+
+        if ( num < 0 ) {
+            var posNum = num * -1;
+            if ( posNum > 1000000000 ) return [ "-" + String(( posNum / 1000000000 ).toFixed(1)) + 'bn'];
+            if ( posNum > 1000000 ) return ["-" + String(( posNum / 1000000 ).toFixed(1)) + 'm'];
+            else { return num.toLocaleString() }
+        }
+
+        return num;
+
+    }
+
 
 }
