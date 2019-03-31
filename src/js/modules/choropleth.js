@@ -3,7 +3,7 @@ import template from '../../templates/template.html'
 import { $, $$, round, numberWithCommas, wait, getDimensions } from '../modules/util'
 import * as d3 from "d3"
 import * as topojson from "topojson"
-import Ractive from 'ractive'
+//import Ractive from 'ractive'
 //import ractiveTap from 'ractive-events-tap'
 //https://interactive.guim.co.uk/embed/iframeable/2019/03/choropleth_map_maker/html/index.html?key=1CuIBiaGMSaEPQRj248c9fEMG9T7FIlGUwqW57DG6DOw
 
@@ -79,7 +79,7 @@ export class Choropleth {
         If not use the first column after the ID column
         */
 
-        this.database.currentKey = (self.database.keys.indexOf(self.database.settings[0].colourBy) > -1) ? self.database.settings[0].colourBy : self.database.keys[0] ;
+        this.database.currentKey = (self.database.keys.includes(self.database.settings[0].colourBy)) ? self.database.settings[0].colourBy : self.database.keys[0] ;
 
         this.isAndroidApp = (window.location.origin === "file://" && /(android)/i.test(navigator.userAgent) ) ? true : false ;  
 
