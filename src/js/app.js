@@ -5,8 +5,8 @@ const app = {
 
 	topojson: [{
 		"name" : "federal",
-		"url" : "https://gdn-cdn.s3.amazonaws.com/gis/australian_federal_electorates.json",
-		"key" : "Elect_div"
+		"url" : "https://interactive.guim.co.uk/gis/australian_federal_electorates.json",
+		"key" : "boundary"
 	}],
 
 	init: () => {
