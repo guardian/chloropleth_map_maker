@@ -19,10 +19,10 @@
                     {{#if dropdown}}
                     <div class="keyText">Currently showing</div>
 
-                    <select id="statChooser" value='{{currentKey}}'>
-                        {{#keys}}
-                            <option value='{{this}}'>{{this}}</option>
-                        {{/keys}}
+                    <select id="statChooser" value='{{currentIndex}}'>
+                        {{#mapping:i}}
+                            <option value='{{i}}'>{{display}}</option>
+                        {{/mapping}}
                     </select>
                     {{/if}}
 
@@ -46,6 +46,7 @@
     <div id="mapContainer">
             <div id="zoomIn" class="zoomButtons">+</div>
             <div id="zoomOut" class="zoomButtons">–</div>
+            <div id="zoomToggle" class="zoomButtons {{#if zoomOn}}zoomUnlocked{{else}}zoomLocked{{/if}}"></div>
     </div>
 
     <div class="row notes">

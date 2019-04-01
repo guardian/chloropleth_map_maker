@@ -3,7 +3,7 @@ import template from '../../templates/template.html'
 import { $, $$, round, numberWithCommas, wait, getDimensions } from '../modules/util'
 import * as d3 from "d3"
 import * as topojson from "topojson"
-//import Ractive from 'ractive'
+import Ractive from 'ractive'
 //import ractiveTap from 'ractive-events-tap'
 //https://interactive.guim.co.uk/embed/iframeable/2019/03/choropleth_map_maker/html/index.html?key=1CuIBiaGMSaEPQRj248c9fEMG9T7FIlGUwqW57DG6DOw
 
@@ -18,6 +18,8 @@ export class Choropleth {
         this.boundaries = boundaries
 
         this.boundaryID = id
+
+        this.database.currentIndex = 0
 
         this.toolbelt = new Toolbelt()
 
@@ -41,7 +43,7 @@ export class Choropleth {
         than one column (excluding the ID column)
         */
 
-        this.database.dropdown = (this.database.keys.length > 1) ? true : false ;
+        this.database.dropdown = (self.database.mapping.map( (item) => item.data).length > 1) ? true : false ;
 
         /*
         Convert all the data to intergers
@@ -74,12 +76,18 @@ export class Choropleth {
         });
 
         /*
-        Check if the default column has been specified in the Googledoc 
-        and if it has been specified check that it actually exists. 
-        If not use the first column after the ID column
+        Specify the current key
         */
 
-        this.database.currentKey = (self.database.keys.includes(self.database.settings[0].colourBy)) ? self.database.settings[0].colourBy : self.database.keys[0] ;
+        this.database.currentKey = self.database.mapping[0].data;
+
+
+        /*
+        Check to see if user is on a mobile.
+        If the user is on a mobile lock the map by default
+        */
+
+        this.database.zoomOn = (self.toolbelt.mobileCheck()) ? false : true ;
 
         this.isAndroidApp = (window.location.origin === "file://" && /(android)/i.test(navigator.userAgent) ) ? true : false ;  
 
@@ -99,15 +107,42 @@ export class Choropleth {
             template: template,
         })
 
-        this.ractive.observe('currentKey', function(key, old) {
+        this.ractive.observe('currentIndex', function(index) {
 
-            self.database.currentKey = key
+            self.database.currentIndex = index
+
+            self.database.currentKey = self.database.mapping[index].data
+
+            self.colourizer()
 
             self.updateMap()
+
+            self.keygen()
 
         });
 
         this.createMap()
+
+        this.resizer()
+
+    }
+
+    resizer() {
+
+        var self = this
+
+        var to = null
+        var lastWidth = document.querySelector(".interactive-container").getBoundingClientRect()
+        window.addEventListener('resize', () => {
+            var thisWidth = document.querySelector(".interactive-container").getBoundingClientRect()
+            if (lastWidth != thisWidth) {
+                window.clearTimeout(to);
+                to = window.setTimeout(function() {
+                    self.createMap()
+                }, 500)
+            }
+        })
+
 
     }
 
@@ -115,11 +150,11 @@ export class Choropleth {
 
         var self = this
 
-        this.scaleType = self.database.settings[0].scaleType.toLowerCase()
+        this.scaleType = self.database.mapping[self.database.currentIndex].scale.toLowerCase()
 
-        this.keyColors = self.database.key.map( (item) => item.colour);
+        this.keyColors = self.database.mapping[self.database.currentIndex].colours.split(",");
 
-        this.thresholds = self.database.key.map( (item) => item.value);
+        this.thresholds = self.database.mapping[self.database.currentIndex].values.split(","); //self.database.key.map( (item) => item.value);
 
         this.min = d3.min( self.database.data, (item) => item[self.database.currentKey]);
 
@@ -250,8 +285,6 @@ export class Choropleth {
 
         var zoom = d3.zoom().scaleExtent([1, 100]).on("zoom", zoomed);
 
-        var zoomOn = false
-
         d3.select("#mapContainer svg").remove();
 
         var svg = d3.select("#mapContainer").append("svg")
@@ -270,7 +303,7 @@ export class Choropleth {
                 }
             });
 
-        if (zoomOn == true | zoomOn == null) {
+        if (self.database.zoomOn) {
 
             svg.call(zoom)
 
@@ -324,8 +357,48 @@ export class Choropleth {
             d3.select(".tooltip").style("top", (d3.mouse(this)[1] + 30) + "px");
         }
 
+        var utilities = {
+
+            commas: function(num) {
+                var result = parseFloat(this[num]).toFixed();
+                result = result.replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+                return result
+            },
+
+            big: function(big) {
+
+                var num = parseFloat(this[big]);
+
+                if ( num > 0 ) {
+                    if ( num > 1000000000 ) { return ( num / 1000000000 ).toFixed(1) + 'bn' }
+                    if ( num > 1000000 ) { return ( num / 1000000 ).toFixed(1) + 'm' }
+                    if (num % 1 != 0) { return num.toFixed(2) }
+                    else { return num.toLocaleString() }
+                }
+
+                if ( num < 0 ) {
+                    var posNum = num * -1;
+                    if ( posNum > 1000000000 ) return [ "-" + String(( posNum / 1000000000 ).toFixed(1)) + 'bn'];
+                    if ( posNum > 1000000 ) return ["-" + String(( posNum / 1000000 ).toFixed(1)) + 'm'];
+                    else { return num.toLocaleString() }
+                }
+
+                return num;
+
+            },
+
+            decimals: function(items) {
+                var nums = items.split(",")
+                return parseFloat(this[nums[0]]).toFixed(nums[1]);
+            }
+
+        }
+
         function tooltipIn(d) {
-            d3.select(".tooltip").html(self.toolbelt.mustache(self.database.settings[0].tooltip, d.properties)).style("visibility", "visible");
+
+            var templater = {...utilities, ...d.properties}
+
+            d3.select(".tooltip").html(self.toolbelt.mustache(self.database.mapping[self.database.currentIndex].tooltip, templater)).style("visibility", "visible");
         }
 
         function tooltipOut(d) {
@@ -345,29 +418,22 @@ export class Choropleth {
         });
 
         function toggleZoom() {
-            console.log(zoomOn)
-            if (zoomOn == false) {
+            if (self.database.zoomOn == false) {
                 d3.select("#zoomToggle").classed("zoomLocked", false)
                 d3.select("#zoomToggle").classed("zoomUnlocked", true)
                 svg.call(zoom);
-                zoomOn = true
-            } else if (zoomOn == true) {
+                self.database.zoomOn = true
+            } else if (self.database.zoomOn == true) {
                 svg.on('.zoom', null);
                 d3.select("#zoomToggle").classed("zoomLocked", true)
                 d3.select("#zoomToggle").classed("zoomUnlocked", false)
-                zoomOn = false
-            } else if (zoomOn == null) {
+                self.database.zoomOn = false
+            } else if (self.database.zoomOn == null) {
                 svg.on('.zoom', null);
                 d3.select("#zoomToggle").classed("zoomLocked", true)
                 d3.select("#zoomToggle").classed("zoomUnlocked", false)
                 svg.call(zoom);
-                zoomOn = false
-            }
-        }
-
-        if (self.width < 500) {
-            if (zoomOn == null) {
-                toggleZoom()
+                self.database.zoomOn = false
             }
         }
 

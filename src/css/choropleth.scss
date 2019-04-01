@@ -1,12 +1,6 @@
 @import "mq";
 
 .interactive-container {
-
-	.choloropleth_title_block {
-		width: 100%;
-		padding: 20px;
-	}
-	
 	#mapContainer {
 		position: relative; 
 		width:100%;
@@ -30,6 +24,12 @@
 	.mesh {
 		fill: none;
   		stroke: #fff;
+	}
+	
+	.notes {
+		font-family: 'Guardian Text Sans Web',Arial;
+		font-size:0.9rem;
+		color:#767676;
 	}
 
 	.keyText {
@@ -67,6 +67,15 @@
 		text-align: center;
 		cursor: pointer;
 		font-weight: bold;
+		color:#FFFFFF;
+	}
+
+	.zoomLocked {
+		background-image:url('assets/imgs/locked.svg');
+	}
+
+	.zoomUnlocked {
+		background-image:url('assets/imgs/unlocked.svg');
 	}
 
 	#zoomIn {
@@ -79,7 +88,19 @@
 		position: absolute;
 		top:50px;
 		left:2%;
+
 	}
+
+	#zoomToggle {
+		position: absolute;
+		top:80px;
+		left:2%;
+		background-size: 20px 20px;
+  		background-repeat: no-repeat;
+  		background-position:49% 49%;
+	}
+
+	
 
 	.btn {
 			width:auto;
@@ -125,6 +146,24 @@
 		position: relative;
 		display: block;
 		float: none;
+	}
+
+	a {
+	color:#005689;
+	text-decoration: none !important;
+	border-bottom: 0.0625rem solid #dcdcdc;
+	-webkit-transition: border-color 0.15s ease-out;
+	transition: border-color 0.15s ease-out;
+}
+
+a:hover {
+	border-color: #6e99b3;
+}
+
+	@media (max-width: 1140px) {
+	.main-col {
+		margin-left:0;
+		}  
 	}
 
 	@media (min-width: 1140px) {
