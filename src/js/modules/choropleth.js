@@ -1,6 +1,6 @@
 import { Toolbelt } from '../modules/toolbelt'
 import template from '../../templates/template.html'
-import { $, $$, round, numberWithCommas, wait, getDimensions } from '../modules/util'
+//import { $, $$, round, numberWithCommas, wait, getDimensions } from '../modules/util'
 import * as d3 from "d3"
 import * as topojson from "topojson"
 import Ractive from 'ractive'
@@ -9,7 +9,7 @@ import Ractive from 'ractive'
 
 export class Choropleth {
 
-	constructor(data, boundaries, id) {
+	constructor(data, boundaries, id, places) {
 
         var self = this
 
@@ -19,7 +19,11 @@ export class Choropleth {
 
         this.boundaryID = id
 
+        this.places = places
+
         this.database.currentIndex = 0
+
+        this.zoomLevel = 1
 
         this.toolbelt = new Toolbelt()
 
@@ -87,7 +91,9 @@ export class Choropleth {
         If the user is on a mobile lock the map by default
         */
 
-        this.database.zoomOn = (self.toolbelt.mobileCheck()) ? false : true ;
+        this.isMobile = self.toolbelt.mobileCheck()
+
+        this.database.zoomOn = (self.isMobile) ? false : true ;
 
         this.isAndroidApp = (window.location.origin === "file://" && /(android)/i.test(navigator.userAgent) ) ? true : false ;  
 
@@ -255,6 +261,21 @@ export class Choropleth {
 
     }
 
+    placeNames() {
+
+        var self = this
+
+        d3.selectAll(`.circles`)
+            .style("display", (d) => { return (d.properties.scalerank < self.zoomLevel) ? "block" : "none"})
+            .style("font-size", (d) => { return 11 / self.zoomLevel + "px"})
+            .attr("r", (d) => { return 1 / self.zoomLevel + "px"})
+        d3.selectAll(`.labels`)
+            .style("display", (d) => { return (d.properties.scalerank < self.zoomLevel) ? "block" : "none"})
+            .style("font-size", (d) => { return 11 / self.zoomLevel + "px"})
+            .attr("x", (d) => self.projection([d.properties.longitude, d.properties.latitude])[0] + (5 / self.zoomLevel))
+            .attr("y", (d) => self.projection([d.properties.longitude, d.properties.latitude])[1] + (5 / self.zoomLevel))
+    }
+
     createMap() {
 
         var self = this
@@ -274,16 +295,16 @@ export class Choropleth {
 
         var scaleFactor = 1;
 
-        var projection = d3.geoMercator()
+        self.projection = d3.geoMercator()
             .center([135, -28.0])
             .scale(self.width * 0.85)
             .translate([self.width / 2, self.height / 2])
 
-        var path = d3.geoPath().projection(projection);
+        var path = d3.geoPath().projection(self.projection);
 
         var graticule = d3.geoGraticule();
 
-        var zoom = d3.zoom().scaleExtent([1, 100]).on("zoom", zoomed);
+        this.zoom = d3.zoom().scaleExtent([1, 100]).on("zoom", zoomed);
 
         d3.select("#mapContainer svg").remove();
 
@@ -305,7 +326,7 @@ export class Choropleth {
 
         if (self.database.zoomOn) {
 
-            svg.call(zoom)
+            svg.call(self.zoom)
 
         }
 
@@ -340,6 +361,26 @@ export class Choropleth {
                 return a !== b;
             })));
         }
+
+        features.selectAll("circle")
+            .data(self.places.features)
+            .enter()
+            .append("circle")
+            .attr("class","circles")
+            .attr("cx", (d) => self.projection([d.properties.longitude, d.properties.latitude])[0])
+            .attr("cy", (d) => self.projection([d.properties.longitude, d.properties.latitude])[1])
+            .attr("r", "1px")
+            .style("display", (d) => { return (d.properties.scalerank < self.zoomLevel) ? "block" : "none"})
+
+        features.selectAll("text")
+            .data(self.places.features)
+            .enter()
+            .append("text")
+            .text((d) => d.properties.name)
+            .attr("x", (d) => self.projection([d.properties.longitude, d.properties.latitude])[0] + 5)
+            .attr("y", (d) => self.projection([d.properties.longitude, d.properties.latitude])[1] + 5)
+            .attr("class","labels")
+            .style("display", (d) => { return (d.properties.scalerank < self.zoomLevel) ? "block" : "none"})
 
         this.keygen()
    
@@ -406,11 +447,11 @@ export class Choropleth {
         }
 
         d3.select("#zoomIn").on("click", function(d) {
-            zoom.scaleBy(svg.transition().duration(750), 1.5);
+            self.zoom.scaleBy(svg.transition().duration(750), 1.5);
         });
 
         d3.select("#zoomOut").on("click", function(d) {
-            zoom.scaleBy(svg.transition().duration(750), 1 / 1.5);
+            self.zoom.scaleBy(svg.transition().duration(750), 1 / 1.5);
         });
 
         d3.select("#zoomToggle").on("click", function(d) {
@@ -421,7 +462,7 @@ export class Choropleth {
             if (self.database.zoomOn == false) {
                 d3.select("#zoomToggle").classed("zoomLocked", false)
                 d3.select("#zoomToggle").classed("zoomUnlocked", true)
-                svg.call(zoom);
+                svg.call(self.zoom);
                 self.database.zoomOn = true
             } else if (self.database.zoomOn == true) {
                 svg.on('.zoom', null);
@@ -432,7 +473,7 @@ export class Choropleth {
                 svg.on('.zoom', null);
                 d3.select("#zoomToggle").classed("zoomLocked", true)
                 d3.select("#zoomToggle").classed("zoomUnlocked", false)
-                svg.call(zoom);
+                svg.call(self.zoom);
                 self.database.zoomOn = false
             }
         }
@@ -451,12 +492,26 @@ export class Choropleth {
                 .style("font-size", 0.8 / d3.event.transform.k + "rem")
                 .attr("dx", 5 / d3.event.transform.k)
                 .attr("dy", 5 / d3.event.transform.k);
+
+            clearTimeout(document.body.data)
+
+            var now = d3.event.transform.k;
+
+            document.body.data = setTimeout( function() { 
+
+                if (now!=self.zoomLevel) {
+                    self.zoomLevel = now
+                    self.placeNames()
+                }
+
+            }, 200);
+
         }
 
         function reset() {
             active.classed("active", false);
             active = d3.select(null);
-            svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+            svg.transition().duration(750).call(self.zoom.transform, d3.zoomIdentity);
         }
 
     }

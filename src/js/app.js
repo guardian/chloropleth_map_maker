@@ -1,4 +1,4 @@
-import xr from 'xr';
+import * as d3 from "d3"
 import { Choropleth } from './modules/choropleth'
 
 const app = {
@@ -15,15 +15,29 @@ const app = {
 
 		if ( key != null ) {
 
-			xr.get('https://interactive.guim.co.uk/docsdata/' + key + '.json?t=' + new Date().getTime()).then((resp) => {
-
-				let boundary = app.topojson.find((datum) => datum.name === resp.data.sheets.settings[0].boundary)
-
-				app.gis(resp.data.sheets, boundary.url, boundary.key)
-
-			});
+			app.loader(key)
 
 		}
+
+	},
+
+	loader: (key) => {
+
+        Promise.all([
+            d3.json('https://interactive.guim.co.uk/docsdata/' + key + '.json'),
+            d3.json('<%= path %>/assets/places.json')
+        ])
+        .then((results) =>  {
+            app.processor(results[0].sheets,results[1])
+        });
+
+	},
+
+	processor: (data, places) => {
+
+		let boundary = app.topojson.find((datum) => datum.name === data.settings[0].boundary)
+
+		app.gis(data, boundary.url, boundary.key, places)
 
 	},
 
@@ -41,13 +55,14 @@ const app = {
 
 	},
 
-	gis: (data, url, id) => {
+	gis: (data, url, id, places) => {
 
-		xr.get(url).then((resp) => {
-
-			new Choropleth(data, resp.data, id)
-
-		});
+        Promise.all([
+            d3.json(url),
+        ])
+        .then((resp) =>  {
+            new Choropleth(data, resp[0], id, places)
+        });
 
 	}
 
