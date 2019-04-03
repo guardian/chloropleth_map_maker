@@ -3,7 +3,8 @@
 .interactive-container {
 
 	h2 {
-		font-family: "Guardian Text Egyptian Web",Georgia,serif;
+		font-family: "Guardian Headline Full",Georgia,serif;
+		font-size:20px;
 	}
 
 	#mapContainer {
@@ -34,6 +35,11 @@
 	.notes {
 		font-family: 'Guardian Text Sans Web',Arial;
 		font-size:0.9rem;
+		color:#767676;
+	}
+
+	.subtitle {
+		font-family: 'Guardian Text Sans Web',Arial;
 		color:#767676;
 	}
 
