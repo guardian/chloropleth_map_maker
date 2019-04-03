@@ -2,7 +2,7 @@ import { Toolbelt } from '../modules/toolbelt'
 import template from '../../templates/template.html'
 import * as d3 from "d3"
 import * as topojson from "topojson"
-import Ractive from 'ractive'
+//import Ractive from 'ractive'
 
 export class Choropleth {
 
@@ -303,15 +303,15 @@ export class Choropleth {
 
         var self = this
 
-        d3.selectAll(`.circles`)
-            .style("display", (d) => { return (d.properties.scalerank < self.zoomLevel) ? "block" : "none"})
-            .style("font-size", (d) => { return 11 / self.zoomLevel + "px"})
-            .attr("r", (d) => { return 1 / self.zoomLevel + "px"})
+        // d3.selectAll(`.circles`)
+        //     .style("display", (d) => { return (d.properties.scalerank < self.zoomLevel) ? "block" : "none"})
+        //     .style("font-size", (d) => { return 11 / self.zoomLevel + "px"})
+        //     .attr("r", (d) => { return 1 / self.zoomLevel + "px"})
         d3.selectAll(`.labels`)
             .style("display", (d) => { return (d.properties.scalerank < self.zoomLevel) ? "block" : "none"})
             .style("font-size", (d) => { return 11 / self.zoomLevel + "px"})
-            .attr("x", (d) => self.projection([d.properties.longitude, d.properties.latitude])[0] + (5 / self.zoomLevel))
-            .attr("y", (d) => self.projection([d.properties.longitude, d.properties.latitude])[1] + (5 / self.zoomLevel))
+            .attr("x", (d) => self.projection([d.properties.longitude, d.properties.latitude])[0])
+            .attr("y", (d) => self.projection([d.properties.longitude, d.properties.latitude])[1])
     }
 
     createMap() {
@@ -400,23 +400,23 @@ export class Choropleth {
             })));
         }
 
-        features.selectAll("circle")
-            .data(self.places.features)
-            .enter()
-            .append("circle")
-            .attr("class","circles")
-            .attr("cx", (d) => self.projection([d.properties.longitude, d.properties.latitude])[0])
-            .attr("cy", (d) => self.projection([d.properties.longitude, d.properties.latitude])[1])
-            .attr("r", "1px")
-            .style("display", (d) => { return (d.properties.scalerank < self.zoomLevel) ? "block" : "none"})
+        // features.selectAll("circle")
+        //     .data(self.places.features)
+        //     .enter()
+        //     .append("circle")
+        //     .attr("class","circles")
+        //     .attr("cx", (d) => self.projection([d.properties.longitude, d.properties.latitude])[0])
+        //     .attr("cy", (d) => self.projection([d.properties.longitude, d.properties.latitude])[1])
+        //     .attr("r", "1px")
+        //     .style("display", (d) => { return (d.properties.scalerank < self.zoomLevel) ? "block" : "none"})
 
         features.selectAll("text")
             .data(self.places.features)
             .enter()
             .append("text")
             .text((d) => d.properties.name)
-            .attr("x", (d) => self.projection([d.properties.longitude, d.properties.latitude])[0] + 5)
-            .attr("y", (d) => self.projection([d.properties.longitude, d.properties.latitude])[1] + 5)
+            .attr("x", (d) => self.projection([d.properties.longitude, d.properties.latitude])[0])
+            .attr("y", (d) => self.projection([d.properties.longitude, d.properties.latitude])[1])
             .attr("class","labels")
             .style("display", (d) => { return (d.properties.scalerank < self.zoomLevel) ? "block" : "none"})
 

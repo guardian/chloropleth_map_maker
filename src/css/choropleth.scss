@@ -41,6 +41,7 @@
 	.subtitle {
 		font-family: 'Guardian Text Sans Web',Arial;
 		color:#767676;
+		margin-bottom: 15px;
 	}
 
 	.keyText {
@@ -236,6 +237,15 @@ a:hover {
 
 		font-family: sans-serif;
 		fill: #3c373d;
+		text-shadow:
+		    -1px -1px 0 #FFF,
+		     0   -1px 0 #FFF,
+		     1px -1px 0 #FFF,
+		     1px  0   0 #FFF,
+		     1px  1px 0 #FFF,
+		     0    1px 0 #FFF,
+		    -1px  1px 0 #FFF,
+		    -1px  0   0 #FFF;
 	}
 
 	
