@@ -164,11 +164,11 @@ export class Choropleth {
 
         this.min = d3.min( self.database.data, (item) => item[self.database.currentKey]);
 
-        if (this.min > 0) {
+        // if (this.min > 0) {
 
-            this.min = 0
+        //     this.min = 0
 
-        }
+        // }
 
         this.max = d3.max( self.database.data, (item) => item[self.database.currentKey]);
 
@@ -218,6 +218,25 @@ export class Choropleth {
 
     keygen() {
 
+        // function niceNumber(num) {
+        //         if ( num > 0 ) {
+        //         if ( num > 1000000000 ) { return ( num / 1000000000 ).toFixed(1) + 'bn' }
+        //         if ( num > 1000000 ) { return ( num / 1000000 ).toFixed(1) + 'm' }
+        //         if (num % 1 != 0) { return num.toFixed(2) }
+        //         else { return num.toLocaleString() }
+        //     }
+
+        //     if ( num < 0 ) {
+        //         var posNum = num * -1;
+        //         if ( posNum > 1000000000 ) return [ "-" + String(( posNum / 1000000000 ).toFixed(1)) + 'bn'];
+        //         if ( posNum > 1000000 ) return ["-" + String(( posNum / 1000000 ).toFixed(1)) + 'm'];
+        //         else { return num.toLocaleString() }
+        //     }
+
+        //     return num;
+      
+        // }
+
         var self = this
 
         this.keyWidth = 290;
@@ -259,7 +278,38 @@ export class Choropleth {
 
         }
 
+        if (this.scaleType === "quantile") {
+
+            this.keyColors.forEach(function(d, i) {
+
+                self.keySvg.append("rect")
+                    .attr("x", self.keySquare * i)
+                    .attr("y", 0)
+                    .attr("width", self.keySquare)
+                    .attr("height", 15)
+                    .attr("fill", d)
+                    .attr("stroke", "#dcdcdc")
+            })
+
+            
+
+            self.keySvg.append("text")
+                .attr("x", 0)
+                .attr("text-anchor", "start")
+                .attr("y", 30)
+                .attr("class", "keyLabel").text(this.min)
+        
+            self.keySvg.append("text")
+                .attr("x", this.keyWidth)
+                .attr("text-anchor", "end")
+                .attr("y", 30)
+                .attr("class", "keyLabel").text(self.toolbelt.niceNumber(this.max))    
+
+        }
+
     }
+
+
 
     placeNames() {
 

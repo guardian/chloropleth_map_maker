@@ -47,6 +47,26 @@ const hashPattern = (patternId, pathClass, rectClass, a = 4) => {
 
 }
 
+ function niceNumber(num) {
+                if ( num > 0 ) {
+                if ( num > 1000000000 ) { return ( num / 1000000000 ).toFixed(1) + 'bn' }
+                if ( num > 1000000 ) { return ( num / 1000000 ).toFixed(1) + 'm' }
+                if (num % 1 != 0) { return num.toFixed(2) }
+                else { return num.toLocaleString() }
+            }
+
+            if ( num < 0 ) {
+                var posNum = num * -1;
+                if ( posNum > 1000000000 ) return [ "-" + String(( posNum / 1000000000 ).toFixed(1)) + 'bn'];
+                if ( posNum > 1000000 ) return ["-" + String(( posNum / 1000000 ).toFixed(1)) + 'm'];
+                else { return num.toLocaleString() }
+            }
+
+            return num;
+      
+}
+
+
 function ordinal(i) {
 
 	if(i === 1) { return 'first' }
