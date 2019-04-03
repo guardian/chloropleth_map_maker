@@ -227,9 +227,14 @@ a:hover {
 		fill: #3c373d;
 	}
 
+	.mapArea:hover {
+		opacity:0.8;
+	}
+
 	.labels {
 
-		font-size: 11px;
+		font-size: 12px;
+		pointer-events: none;
 
 		@media (max-width: 600px) {
 			font-size: 10px;

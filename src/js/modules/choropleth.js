@@ -383,7 +383,7 @@ export class Choropleth {
             .attr("d", path);
         
         features.append("g").selectAll("path").data(topojson.feature(self.boundaries, self.boundaries.objects[self.database.topoKey]).features).enter().append("path")
-            .attr("class", self.database.topoKey)
+            .attr("class", self.database.topoKey + " mapArea")
             .attr("fill", function(d) {
                 return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' ;
             })
