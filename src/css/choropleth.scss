@@ -1,6 +1,11 @@
 @import "mq";
 
 .interactive-container {
+
+	h2 {
+		font-family: "Guardian Text Egyptian Web",Georgia,serif;
+	}
+
 	#mapContainer {
 		position: relative; 
 		width:100%;
@@ -216,8 +221,14 @@ a:hover {
 	}
 
 	.labels {
-		font-family: sans-serif;
+
 		font-size: 11px;
+
+		@media (max-width: 600px) {
+			font-size: 10px;
+		}
+
+		font-family: sans-serif;
 		fill: #3c373d;
 	}
 

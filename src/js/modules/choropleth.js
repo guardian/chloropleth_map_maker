@@ -1,11 +1,8 @@
 import { Toolbelt } from '../modules/toolbelt'
 import template from '../../templates/template.html'
-//import { $, $$, round, numberWithCommas, wait, getDimensions } from '../modules/util'
 import * as d3 from "d3"
 import * as topojson from "topojson"
-//import Ractive from 'ractive'
-//import ractiveTap from 'ractive-events-tap'
-//https://interactive.guim.co.uk/embed/iframeable/2019/03/choropleth_map_maker/html/index.html?key=1CuIBiaGMSaEPQRj248c9fEMG9T7FIlGUwqW57DG6DOw
+import Ractive from 'ractive'
 
 export class Choropleth {
 
@@ -144,6 +141,7 @@ export class Choropleth {
             if (lastWidth != thisWidth) {
                 window.clearTimeout(to);
                 to = window.setTimeout(function() {
+                    self.zoomLevel = 1
                     self.createMap()
                 }, 500)
             }
@@ -163,12 +161,6 @@ export class Choropleth {
         this.thresholds = self.database.mapping[self.database.currentIndex].values.split(","); //self.database.key.map( (item) => item.value);
 
         this.min = d3.min( self.database.data, (item) => item[self.database.currentKey]);
-
-        // if (this.min > 0) {
-
-        //     this.min = 0
-
-        // }
 
         this.max = d3.max( self.database.data, (item) => item[self.database.currentKey]);
 
@@ -232,25 +224,6 @@ export class Choropleth {
 
     keygen() {
 
-        // function niceNumber(num) {
-        //         if ( num > 0 ) {
-        //         if ( num > 1000000000 ) { return ( num / 1000000000 ).toFixed(1) + 'bn' }
-        //         if ( num > 1000000 ) { return ( num / 1000000 ).toFixed(1) + 'm' }
-        //         if (num % 1 != 0) { return num.toFixed(2) }
-        //         else { return num.toLocaleString() }
-        //     }
-
-        //     if ( num < 0 ) {
-        //         var posNum = num * -1;
-        //         if ( posNum > 1000000000 ) return [ "-" + String(( posNum / 1000000000 ).toFixed(1)) + 'bn'];
-        //         if ( posNum > 1000000 ) return ["-" + String(( posNum / 1000000 ).toFixed(1)) + 'm'];
-        //         else { return num.toLocaleString() }
-        //     }
-
-        //     return num;
-      
-        // }
-
         var self = this
 
         this.keyWidth = 290;
@@ -290,7 +263,7 @@ export class Choropleth {
                     .attr("x", (i + 1) * self.keySquare)
                     .attr("text-anchor", "middle")
                     .attr("y", height)
-                    .attr("class", "keyLabel").text(self.toolbelt.numberFormat(d))
+                    .attr("class", "keyLabel").text(self.toolbelt.niceNumber(d))
             })
 
         }
