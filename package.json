@@ -62,7 +62,6 @@
     "request-promise": "^4.2.2",
     "require-uncached": "^1.0.3",
     "topojson": "^3.0.2",
-    "unfetch": "^3.0.0",
-    "xr": "^0.3.0"
+    "unfetch": "^3.0.0"
   }
 }

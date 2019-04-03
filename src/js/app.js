@@ -7,7 +7,11 @@ const app = {
 		"name" : "federal",
 		"url" : "https://interactive.guim.co.uk/gis/australian_federal_electorates.json",
 		"key" : "boundary"
-	}],
+	},{
+		"name" : "sa2",
+		"url" : "https://interactive.guim.co.uk/gis/sa2.json",
+		"key" : "SA2_NAME16"
+	}], //
 
 	init: () => {
 
@@ -17,6 +21,11 @@ const app = {
 
 			app.loader(key)
 
+		} else {
+
+			// This is for testing only
+			app.loader("1CuIBiaGMSaEPQRj248c9fEMG9T7FIlGUwqW57DG6DOw")
+			
 		}
 
 	},
