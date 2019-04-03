@@ -3,7 +3,6 @@ var el = document.createElement('script');
 el.src = '<%= path %>/app.js';
 document.body.appendChild(el);
 
-
 // THIS IS A .find() Polyfill
 if (!Array.prototype.find) {
   Object.defineProperty(Array.prototype, 'find', {

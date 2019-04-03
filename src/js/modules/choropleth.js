@@ -44,13 +44,13 @@ export class Choropleth {
         /*
         Specify if the graphic requires a dropdown menu
         based on whether the Google doc contains more
-        than one column (excluding the ID column)
+        than one column (excluding the noew delted ID column)
         */
 
         this.database.dropdown = (self.database.mapping.map( (item) => item.data).length > 1) ? true : false ;
 
         /*
-        Convert all the data to intergers
+        Convert all the datum in the data columns to intergers
         */
 
         this.database.data.forEach( item => {
@@ -180,31 +180,45 @@ export class Choropleth {
 
         if (this.scaleType === "threshold") {
 
+            this.domain = self.thresholds
+
             this.color = d3.scaleThreshold().domain(self.thresholds).range(self.keyColors)
 
         } else if (this.scaleType === "ordinal") {
+
+            this.domain = [self.min, self.max]
 
             this.color = d3.scaleOrdinal().range(self.keyColors)
 
         } else if (this.scaleType === "linear median") { // Median
 
+            this.domain = [self.min, self.median, self.max]
+
             this.color = d3.scaleLinear().domain([self.min, self.median, self.max]).range(self.keyColors);
 
         } else if (this.scaleType === "linear mean") { // Mean
+
+            this.domain = [self.min, self.mean, self.max]
 
             this.color = d3.scaleLinear().domain([self.min, self.mean, self.max]).range(self.keyColors);
 
         } else if (this.scaleType === "quantile") {
 
+            this.domain = [self.min, self.max]
+
             this.color = d3.scaleQuantile().domain(self.range).range(self.keyColors);
 
         } else if (this.scaleType === "quantize") {
+
+            this.domain = [self.min, self.max]
 
             this.color = d3.scaleQuantize().domain(self.min, self.max).range(self.keyColors);
 
         } else { // Linear by default
 
             this.scaleType = "linear"
+
+            this.domain = [self.min, self.max]
 
             this.color = d3.scaleLinear().domain([self.min, self.max]).range(self.keyColors);
 
@@ -254,6 +268,9 @@ export class Choropleth {
         
         this.keySquare = this.keyWidth / 10;
 
+        const barHeight = 15
+        const height = 30
+
         if (this.scaleType === "threshold") {
 
             this.keyColors.forEach(function(d, i) {
@@ -262,7 +279,7 @@ export class Choropleth {
                     .attr("x", self.keySquare * i)
                     .attr("y", 0)
                     .attr("width", self.keySquare)
-                    .attr("height", 15)
+                    .attr("height", barHeight)
                     .attr("fill", d)
                     .attr("stroke", "#dcdcdc")
             })
@@ -272,8 +289,8 @@ export class Choropleth {
                 self.keySvg.append("text")
                     .attr("x", (i + 1) * self.keySquare)
                     .attr("text-anchor", "middle")
-                    .attr("y", 30)
-                    .attr("class", "keyLabel").text(d)
+                    .attr("y", height)
+                    .attr("class", "keyLabel").text(self.toolbelt.numberFormat(d))
             })
 
         }
