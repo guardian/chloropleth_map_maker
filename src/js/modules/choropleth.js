@@ -57,7 +57,7 @@ export class Choropleth {
 
             for (let i = 0; i < self.database.keys.length; i++) {
 
-                item[self.database.keys[i]] = +item[self.database.keys[i]]
+                item[self.database.keys[i]] = (item[self.database.keys[i]]!="") ? +item[self.database.keys[i]] : null ;
 
             }
 
@@ -364,7 +364,7 @@ export class Choropleth {
         features.append("g").selectAll("path").data(topojson.feature(self.boundaries, self.boundaries.objects[self.database.topoKey]).features).enter().append("path")
             .attr("class", self.database.topoKey)
             .attr("fill", function(d) {
-                return self.color(d.properties[self.database.currentKey])
+                return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' ;
             })
             .attr("d", path)
             .on("mouseover", tooltipIn)
@@ -454,9 +454,7 @@ export class Choropleth {
 
         function tooltipIn(d) {
 
-            var templater = {...utilities, ...d.properties}
-
-            d3.select(".tooltip").html(self.toolbelt.mustache(self.database.mapping[self.database.currentIndex].tooltip, templater)).style("visibility", "visible");
+            d3.select(".tooltip").html((self.toolbelt.contains(Object.values(d.properties), null)) ? "No data available" : self.toolbelt.mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties})).style("visibility", "visible");
         }
 
         function tooltipOut(d) {
@@ -538,7 +536,7 @@ export class Choropleth {
         var self = this
 
         d3.selectAll(`.${self.database.topoKey}`).transition("changeFill")
-            .attr("fill", (d) => self.color(d.properties[self.database.currentKey]))
+            .attr("fill", (d) => { return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' })
 
     }
 	
