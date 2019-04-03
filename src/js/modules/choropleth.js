@@ -3,7 +3,7 @@ import template from '../../templates/template.html'
 //import { $, $$, round, numberWithCommas, wait, getDimensions } from '../modules/util'
 import * as d3 from "d3"
 import * as topojson from "topojson"
-import Ractive from 'ractive'
+//import Ractive from 'ractive'
 //import ractiveTap from 'ractive-events-tap'
 //https://interactive.guim.co.uk/embed/iframeable/2019/03/choropleth_map_maker/html/index.html?key=1CuIBiaGMSaEPQRj248c9fEMG9T7FIlGUwqW57DG6DOw
 
@@ -307,8 +307,6 @@ export class Choropleth {
                     .attr("fill", d)
                     .attr("stroke", "#dcdcdc")
             })
-
-            
 
             self.keySvg.append("text")
                 .attr("x", 0)
