@@ -2,6 +2,9 @@
 
 .interactive-container {
 
+	background: #FFF;
+	max-width:1200px;
+
 	h2 {
 		font-family: "Guardian Headline Full",Georgia,serif;
 		font-size:20px;
@@ -134,6 +137,12 @@
 		margin-left:1%; 
 	}
 
+	.col33 {
+		float:left;
+		width:32%;
+		margin-left:1%; 
+	}
+
 	.row {
 		margin-bottom:5px; 
 	}
@@ -197,7 +206,7 @@ a:hover {
 
 	@media (max-width: 600px) {
 
-	.col10, .col20, .col30, .col40, .col50, .col60, .col70, .col80, .col90 {
+	.col10, .col20, .col30,.col40, .col50, .col60, .col70, .col80, .col90 {
 	width:100%;
 	margin:0;
 	}
@@ -221,6 +230,7 @@ a:hover {
 		font-family: 'Guardian Text Sans Web',Arial;
 		padding:10px;
 		pointer-events: none;
+		border: 2px #000 solid;
 	}	
 
 	.circles {

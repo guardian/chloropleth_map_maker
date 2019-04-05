@@ -2,7 +2,8 @@ import { Toolbelt } from '../modules/toolbelt'
 import template from '../../templates/template.html'
 import * as d3 from "d3"
 import * as topojson from "topojson"
-//import Ractive from 'ractive'
+// Comment out ractive before deploying
+import Ractive from 'ractive'
 
 export class Choropleth {
 
@@ -46,16 +47,22 @@ export class Choropleth {
 
         this.database.dropdown = (self.database.mapping.map( (item) => item.data).length > 1) ? true : false ;
 
+        
+
         /*
-        Convert all the datum in the data columns to intergers
+        Convert all the datum that looks like a number in the data columns to intergers 
         */
 
         this.database.data.forEach( item => {
 
+            console.log(item)
+
             for (let i = 0; i < self.database.keys.length; i++) {
 
-                item[self.database.keys[i]] = (item[self.database.keys[i]]!="") ? +item[self.database.keys[i]] : null ;
-
+                if (!isNaN(item[self.database.keys[i]])) {
+                    item[self.database.keys[i]] = (item[self.database.keys[i]]!="") ? +item[self.database.keys[i]] : null ;
+                }
+                
             }
 
         });
@@ -156,6 +163,10 @@ export class Choropleth {
 
         this.scaleType = self.database.mapping[self.database.currentIndex].scale.toLowerCase()
 
+        this.database.election = (this.scaleType === "election") ? true : false ;
+
+        this.database.key = (this.scaleType != "election") ? true : false ;
+
         this.keyColors = self.database.mapping[self.database.currentIndex].colours.split(",");
 
         this.thresholds = self.database.mapping[self.database.currentIndex].values.split(","); //self.database.key.map( (item) => item.value);
@@ -176,7 +187,47 @@ export class Choropleth {
 
             this.color = d3.scaleThreshold().domain(self.thresholds).range(self.keyColors)
 
-        } else if (this.scaleType === "ordinal") {
+        }
+
+        if (this.scaleType === "election") {
+
+
+                var marginQuint = [6, 12, 18, 24];
+
+                var colBlue = ['rgb(189,215,231)','rgb(107,174,214)','rgb(49,130,189)','rgb(8,81,156)'];
+                var colRed = ['rgb(252,174,145)','rgb(251,106,74)','rgb(222,45,38)','rgb(165,15,21)'];
+                var colPurple = ['rgb(203,201,226)','rgb(158,154,200)','rgb(117,107,177)','rgb(84,39,143)'];
+
+                var scaleBlue = d3.scaleThreshold()
+                                .domain(marginQuint)
+                                .range(colBlue);
+
+                var scaleRed = d3.scaleThreshold()
+                                .domain(marginQuint)
+                                .range(colRed);
+
+                var scalePurple = d3.scaleThreshold()
+                                .domain(marginQuint)
+                                .range(colPurple); 
+        
+
+                this.color = function(margin,party) {
+                    if (party === "NAT" | party === "LIB" | party === "LNP") {
+                        return scaleBlue(margin)
+                    }
+
+                    else if (party === "ALP") {
+                        return scaleRed(margin)
+                    }
+
+                    else {
+                        return scalePurple(margin)
+                    }
+                }
+
+        }
+
+        else if (this.scaleType === "ordinal") {
 
             this.domain = [self.min, self.max]
 
@@ -233,6 +284,9 @@ export class Choropleth {
         }
 
         d3.select("#keyContainer svg").remove();
+        d3.select("#keyContainer1 svg").remove();
+        d3.select("#keyContainer2 svg").remove();
+        d3.select("#keyContainer3 svg").remove();
 
         this.keySvg = d3.select("#keyContainer").append("svg")
             .attr("width", self.keyWidth)
@@ -292,6 +346,125 @@ export class Choropleth {
                 .attr("text-anchor", "end")
                 .attr("y", 30)
                 .attr("class", "keyLabel").text(self.toolbelt.niceNumber(this.max))    
+
+        }
+
+        if (this.scaleType === "election") { 
+
+            var marginQuint = [0, 6, 12, "18+"];
+
+            var colBlue = ['rgb(189,215,231)','rgb(107,174,214)','rgb(49,130,189)','rgb(8,81,156)'];
+            var colRed = ['rgb(252,174,145)','rgb(251,106,74)','rgb(222,45,38)','rgb(165,15,21)'];
+            var colPurple = ['rgb(203,201,226)','rgb(158,154,200)','rgb(117,107,177)','rgb(84,39,143)'];
+
+            this.keyWidth = document.querySelector("#keyContainer1").getBoundingClientRect().width - 10
+
+            // if (this.width < 480) {
+            //     this.keyWidth = this.width - 10
+            // }
+
+            this.keySquare = this.keyWidth / 6;
+
+            this.keySvg1 = d3.select("#keyContainer1").append("svg")
+                .attr("width", self.keyWidth)
+                .attr("height", "40px")
+                .attr("id", "keySvg1")
+
+            this.keySvg2 = d3.select("#keyContainer2").append("svg")
+                .attr("width", self.keyWidth)
+                .attr("height", "40px")
+                .attr("id", "keySvg2")
+                
+            this.keySvg3 = d3.select("#keyContainer3").append("svg")
+                .attr("width", self.keyWidth)
+                .attr("height", "40px")
+                .attr("id", "keySvg3")        
+
+
+            colBlue.forEach(function(d, i) {
+
+                self.keySvg1.append("rect")
+                    .attr("x", self.keySquare * i)
+                    .attr("y", 0)
+                    .attr("width", self.keySquare)
+                    .attr("height", barHeight)
+                    .attr("fill", d)
+                    .attr("stroke", "#dcdcdc")
+            })
+
+            marginQuint.forEach(function(d, i) {
+
+                // if (i === 0) {
+                //     self.keySvg1.append("text")
+                //         .attr("x", 0)
+                //         .attr("text-anchor", "start")
+                //         .attr("y", height)
+                //         .attr("class", "keyLabel").text(0)
+                // }
+
+                self.keySvg1.append("text")
+                    .attr("x", (i) * self.keySquare)
+                    .attr("text-anchor", "start")
+                    .attr("y", height)
+                    .attr("class", "keyLabel").text(self.toolbelt.niceNumber(d))
+            })
+
+            colRed.forEach(function(d, i) {
+
+                self.keySvg2.append("rect")
+                    .attr("x", self.keySquare * i)
+                    .attr("y", 0)
+                    .attr("width", self.keySquare)
+                    .attr("height", barHeight)
+                    .attr("fill", d)
+                    .attr("stroke", "#dcdcdc")
+            })
+
+            marginQuint.forEach(function(d, i) {
+
+                // if (i === 0) {
+                //     self.keySvg2.append("text")
+                //         .attr("x", 0)
+                //         .attr("text-anchor", "start")
+                //         .attr("y", height)
+                //         .attr("class", "keyLabel").text(0)
+                // }
+
+                self.keySvg2.append("text")
+                    .attr("x", (i) * self.keySquare)
+                    .attr("text-anchor", "start")
+                    .attr("y", height)
+                    .attr("class", "keyLabel").text(self.toolbelt.niceNumber(d))
+            }) 
+
+            colPurple.forEach(function(d, i) {
+
+               
+                self.keySvg3.append("rect")
+                    .attr("x", self.keySquare * i)
+                    .attr("y", 0)
+                    .attr("width", self.keySquare)
+                    .attr("height", barHeight)
+                    .attr("fill", d)
+                    .attr("stroke", "#dcdcdc")
+            })
+
+            marginQuint.forEach(function(d, i) {
+
+                //  if (i === 0) {
+                //     self.keySvg3.append("text")
+                //         .attr("x", 0)
+                //         .attr("text-anchor", "start")
+                //         .attr("y", height)
+                //         .attr("class", "keyLabel").text(0)
+                // }
+
+                self.keySvg3.append("text")
+                    .attr("x", (i) * self.keySquare)
+                    .attr("text-anchor", "start")
+                    .attr("y", height)
+                    .attr("class", "keyLabel").text(self.toolbelt.niceNumber(d))
+            })     
 
         }
 
@@ -385,7 +558,15 @@ export class Choropleth {
         features.append("g").selectAll("path").data(topojson.feature(self.boundaries, self.boundaries.objects[self.database.topoKey]).features).enter().append("path")
             .attr("class", self.database.topoKey + " mapArea")
             .attr("fill", function(d) {
-                return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' ;
+
+                if (self.scaleType != "election") {
+                    return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' ;
+                }
+
+                else {
+                    // console.log(d.properties)
+                    return (d.properties.Margin!=null) ? self.color(d.properties.Margin, d.properties['Notional incumbent']) : 'lightgrey' ;   
+                }
             })
             .attr("d", path)
             .on("mouseover", tooltipIn)
@@ -474,8 +655,7 @@ export class Choropleth {
         }
 
         function tooltipIn(d) {
-
-            d3.select(".tooltip").html((self.toolbelt.contains(Object.values(d.properties), null)) ? "No data available" : self.toolbelt.mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties})).style("visibility", "visible");
+            d3.select(".tooltip").html((d.properties[self.database.currentKey]===null) ? "No data available" : self.toolbelt.mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties})).style("visibility", "visible");
         }
 
         function tooltipOut(d) {
