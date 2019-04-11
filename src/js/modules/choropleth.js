@@ -3,7 +3,7 @@ import template from '../../templates/template.html'
 import * as d3 from "d3"
 import * as topojson from "topojson"
 // Comment out ractive before deploying
-import Ractive from 'ractive'
+// import Ractive from 'ractive'
 
 export class Choropleth {
 
@@ -55,7 +55,7 @@ export class Choropleth {
 
         this.database.data.forEach( item => {
 
-            console.log(item)
+            // console.log(item)
 
             for (let i = 0; i < self.database.keys.length; i++) {
 
@@ -110,12 +110,13 @@ export class Choropleth {
         var self = this
 
         this.colourizer()
-
+        Ractive.DEBUG = /unminified/.test(function(){/*unminified*/});
         this.ractive = new Ractive({
             el: '#choloropleth',
             data: self.database,
             template: template,
         })
+
 
         this.ractive.observe('currentIndex', function(index) {
 
@@ -269,7 +270,7 @@ export class Choropleth {
 
         var output = `Scale type: ${this.scaleType}\nMin: ${this.min}\nMax: ${this.max}\nMedian: ${this.median}\nMean: ${this.mean}\n\n------------------`
 
-        console.log(output)
+        // console.log(output)
 
     }
 
@@ -614,7 +615,13 @@ export class Choropleth {
             } else if (mouseX >= half) {
                 d3.select(".tooltip").style("left", (d3.mouse(this)[0] - 200) + "px");
             }
-            d3.select(".tooltip").style("top", (d3.mouse(this)[1] + 30) + "px");
+
+            if (mouseY < (self.height / 2)) {
+                d3.select(".tooltip").style("top", (d3.mouse(this)[1] + 30) + "px");
+            } else if (mouseY >= (self.height / 2)) {
+                d3.select(".tooltip").style("top", (d3.mouse(this)[1] - 120) + "px");
+            }
+            
         }
 
         var utilities = {
