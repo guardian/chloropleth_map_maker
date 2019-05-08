@@ -67,6 +67,7 @@ export class Choropleth {
 
         });
 
+        // console.log(this.database.data)
         /*
         Get the name of the topojson object
         */
@@ -184,13 +185,14 @@ export class Choropleth {
 
         if (this.scaleType === "threshold") {
 
+
             this.domain = self.thresholds
 
             this.color = d3.scaleThreshold().domain(self.thresholds).range(self.keyColors)
 
         }
 
-        if (this.scaleType === "election") {
+        else if (this.scaleType === "election") {
 
 
                 var marginQuint = [6, 12, 18, 24];
@@ -270,7 +272,7 @@ export class Choropleth {
 
         var output = `Scale type: ${this.scaleType}\nMin: ${this.min}\nMax: ${this.max}\nMedian: ${this.median}\nMean: ${this.mean}\n\n------------------`
 
-        // console.log(output)
+        console.log(output)
 
     }
 
@@ -312,13 +314,17 @@ export class Choropleth {
                     .attr("stroke", "#dcdcdc")
             })
 
+            var threshLen = this.thresholds.length
             this.thresholds.forEach(function(d, i) {
 
-                self.keySvg.append("text")
+                if (i != threshLen -1) {
+                    self.keySvg.append("text")
                     .attr("x", (i + 1) * self.keySquare)
                     .attr("text-anchor", "middle")
                     .attr("y", height)
                     .attr("class", "keyLabel").text(self.toolbelt.niceNumber(d))
+                }
+             
             })
 
         }
@@ -577,9 +583,7 @@ export class Choropleth {
             features.append("path")
             .attr("class", "mesh")
             .attr("stroke-width", 0.5)
-            .attr("d", path(topojson.mesh(self.boundaries, self.boundaries.objects[self.database.topoKey], function(a, b) {
-                return a !== b;
-            })));
+            .attr("d", path(topojson.mesh(self.boundaries, self.boundaries.objects[self.database.topoKey])));
         }
 
         // features.selectAll("circle")

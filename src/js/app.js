@@ -10,7 +10,7 @@ const app = {
 	},{
 		"name" : "sa2",
 		"url" : "https://interactive.guim.co.uk/gis/sa2.json",
-		"key" : "SA2_NAME16"
+		"key" : "SA2_MAIN16"
 	}],
 
 	init: () => {
