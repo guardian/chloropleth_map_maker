@@ -3,7 +3,7 @@ import template from '../../templates/template.html'
 import * as d3 from "d3"
 import * as topojson from "topojson"
 // Comment out ractive before deploying
-// import Ractive from 'ractive'
+//import Ractive from 'ractive'
 
 export class Choropleth {
 
@@ -47,15 +47,17 @@ export class Choropleth {
 
         this.database.dropdown = (self.database.mapping.map( (item) => item.data).length > 1) ? true : false ;
 
-        
+        if (self.database.mapping[0].scale === 'swing') {
 
+            this.database.dropdown = false
+
+        }
+        
         /*
         Convert all the datum that looks like a number in the data columns to intergers 
         */
 
         this.database.data.forEach( item => {
-
-            // console.log(item)
 
             for (let i = 0; i < self.database.keys.length; i++) {
 
@@ -67,7 +69,7 @@ export class Choropleth {
 
         });
 
-        // console.log(this.database.data)
+        // //console.log(this.database.data)
         /*
         Get the name of the topojson object
         */
@@ -118,7 +120,6 @@ export class Choropleth {
             template: template,
         })
 
-
         this.ractive.observe('currentIndex', function(index) {
 
             self.database.currentIndex = index
@@ -155,8 +156,6 @@ export class Choropleth {
                 }, 500)
             }
         })
-
-
     }
 
     colourizer() {
@@ -167,7 +166,9 @@ export class Choropleth {
 
         this.database.election = (this.scaleType === "election") ? true : false ;
 
-        this.database.key = (this.scaleType != "election") ? true : false ;
+        this.database.swing = (this.scaleType === "swing") ? true : false ;
+
+        this.database.key = (this.scaleType != "election" && this.scaleType != "swing") ? true : false ;
 
         this.keyColors = self.database.mapping[self.database.currentIndex].colours.split(",");
 
@@ -230,7 +231,24 @@ export class Choropleth {
 
         }
 
-        else if (this.scaleType === "ordinal") {
+        //https://interactive.guim.co.uk/embed/iframeable/2019/03/choropleth_map_maker-swingtest-v2/html/index.html
+        else if (this.scaleType === "swing") {
+
+            this.colBlue = ['rgb(189,215,231)','rgb(8,81,156)'];
+
+            this.colRed = ['rgb(252,174,145)','rgb(165,15,21)'];
+
+            this.scaleBlue = d3.scaleLinear().domain([0, 10]).range(self.colBlue);
+
+            this.scaleRed = d3.scaleLinear().domain([0, 10]).range(self.colRed);       
+
+            this.color = function(swing, prediction) {
+
+                return (swing < 0) ? self.scaleRed(Math.abs(swing)) : self.scaleBlue(swing) ;               
+
+            }
+
+        } else if (this.scaleType === "ordinal") {
 
             this.domain = [self.min, self.max]
 
@@ -272,7 +290,7 @@ export class Choropleth {
 
         var output = `Scale type: ${this.scaleType}\nMin: ${this.min}\nMax: ${this.max}\nMedian: ${this.median}\nMean: ${this.mean}\n\n------------------`
 
-        console.log(output)
+        //console.log(output)
 
     }
 
@@ -300,6 +318,68 @@ export class Choropleth {
 
         const barHeight = 15
         const height = 30
+
+        if (this.scaleType === "swing") {
+
+            var value = [0, 2, 4, 6, 8, 10];
+
+            var label = [0, 2, 4, 6, 8, "10+"];   
+
+            this.keyWidth = document.querySelector("#keyContainer1").getBoundingClientRect().width - 10
+
+            this.keySquare = this.keyWidth / 6;
+
+            this.keySvg1 = d3.select("#keyContainer1").append("svg")
+                .attr("width", self.keyWidth)
+                .attr("height", "40px")
+                .attr("id", "keySvg1")
+
+            this.keySvg2 = d3.select("#keyContainer2").append("svg")
+                .attr("width", self.keyWidth)
+                .attr("height", "40px")
+                .attr("id", "keySvg2")
+
+            value.forEach(function(d, i) {
+
+                self.keySvg1.append("rect")
+                    .attr("x", self.keySquare * i)
+                    .attr("y", 0)
+                    .attr("width", self.keySquare)
+                    .attr("height", barHeight)
+                    .attr("fill", self.scaleBlue(d))
+                    .attr("stroke", "#dcdcdc")
+            })
+
+            label.forEach(function(d, i) {
+
+                self.keySvg1.append("text")
+                    .attr("x", (i) * self.keySquare)
+                    .attr("text-anchor", "start")
+                    .attr("y", height)
+                    .attr("class", "keyLabel").text(d)
+            })
+
+            value.forEach(function(d, i) {
+
+                self.keySvg2.append("rect")
+                    .attr("x", self.keySquare * i)
+                    .attr("y", 0)
+                    .attr("width", self.keySquare)
+                    .attr("height", barHeight)
+                    .attr("fill", self.scaleRed(d))
+                    .attr("stroke", "#dcdcdc")
+            })
+
+            label.forEach(function(d, i) {
+
+                self.keySvg2.append("text")
+                    .attr("x", (i) * self.keySquare)
+                    .attr("text-anchor", "start")
+                    .attr("y", height)
+                    .attr("class", "keyLabel").text(d)
+            })  
+
+        }
 
         if (this.scaleType === "threshold") {
 
@@ -477,8 +557,6 @@ export class Choropleth {
 
     }
 
-
-
     placeNames() {
 
         var self = this
@@ -566,14 +644,20 @@ export class Choropleth {
             .attr("class", self.database.topoKey + " mapArea")
             .attr("fill", function(d) {
 
-                if (self.scaleType != "election") {
+                if (self.scaleType != "election"  && self.scaleType != "swing") {
                     return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' ;
                 }
 
-                else {
-                    // console.log(d.properties)
+                else if (self.scaleType === "election" ) {
+                    // //console.log(d.properties)
                     return (d.properties.Margin!=null) ? self.color(d.properties.Margin, d.properties['Notional incumbent']) : 'lightgrey' ;   
                 }
+
+                else if (self.scaleType === "swing" ) {
+                    console.log(d.properties["2PPSwing"])
+                    return (d.properties["2PPSwing"]!=null) ? self.color(d.properties["2PPSwing"], d.properties['Prediction']) : 'lightgrey' ;   
+                }
+
             })
             .attr("d", path)
             .on("mouseover", tooltipIn)
