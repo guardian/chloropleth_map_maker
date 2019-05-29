@@ -3,7 +3,7 @@ import template from '../../templates/template.html'
 import * as d3 from "d3"
 import * as topojson from "topojson"
 // Comment out ractive before deploying
-//import Ractive from 'ractive'
+import Ractive from 'ractive'
 
 export class Choropleth {
 
@@ -187,7 +187,6 @@ export class Choropleth {
 
         if (this.scaleType === "threshold") {
 
-
             this.domain = self.thresholds
 
             this.color = d3.scaleThreshold().domain(self.thresholds).range(self.keyColors)
@@ -251,9 +250,9 @@ export class Choropleth {
 
         } else if (this.scaleType === "ordinal") {
 
-            this.domain = [self.min, self.max]
+            // this.domain = [self.min, self.max]
 
-            this.color = d3.scaleOrdinal().range(self.keyColors)
+            this.color = d3.scaleOrdinal().domain(self.thresholds).range(self.keyColors)
 
         } else if (this.scaleType === "linear median") { // Median
 
@@ -271,7 +270,7 @@ export class Choropleth {
 
             this.domain = [self.min, self.max]
 
-            this.color = d3.scaleQuantile().domain(self.range).range(self.keyColors);
+            this.color = d3.scaleQuantile().domain(this.domain).range(self.keyColors);
 
         } else if (this.scaleType === "quantize") {
 
@@ -289,8 +288,8 @@ export class Choropleth {
 
         }
 
-        var output = `Scale type: ${this.scaleType}\nMin: ${this.min}\nMax: ${this.max}\nMedian: ${this.median}\nMean: ${this.mean}\n\n------------------`
-
+        var output = `Scale type: ${this.scaleType}\nColours: ${self.keyColors}\nThresholds: ${self.thresholds}\nMin: ${this.min}\nMax: ${this.max}\nMedian: ${this.median}\nMean: ${this.mean}\n\n------------------`
+        console.log(output)
     }
 
     keygen() {
@@ -303,15 +302,13 @@ export class Choropleth {
             this.keyWidth = this.width - 10
         }
 
+        d3.select("#keyContainer").html("");
         d3.select("#keyContainer svg").remove();
         d3.select("#keyContainer1 svg").remove();
         d3.select("#keyContainer2 svg").remove();
         d3.select("#keyContainer3 svg").remove();
 
-        this.keySvg = d3.select("#keyContainer").append("svg")
-            .attr("width", self.keyWidth)
-            .attr("height", "40px")
-            .attr("id", "keySvg")
+       
         
         this.keySquare = this.keyWidth / 10;
 
@@ -382,6 +379,12 @@ export class Choropleth {
 
         if (this.scaleType === "threshold") {
 
+            this.keySvg = d3.select("#keyContainer").append("svg")
+                .attr("width", self.keyWidth)
+                .attr("height", "40px")
+                .attr("id", "keySvg")
+
+
             this.keyColors.forEach(function(d, i) {
 
                 self.keySvg.append("rect")
@@ -396,19 +399,36 @@ export class Choropleth {
             var threshLen = this.thresholds.length
             this.thresholds.forEach(function(d, i) {
 
-                if (i != threshLen -1) {
+                // if (i != threshLen -1) {
                     self.keySvg.append("text")
                     .attr("x", (i + 1) * self.keySquare)
                     .attr("text-anchor", "middle")
                     .attr("y", height)
                     .attr("class", "keyLabel").text(self.toolbelt.niceNumber(d))
-                }
+                // }
              
             })
 
         }
 
+        if (this.scaleType === "ordinal") {
+            var html = '';
+
+            this.thresholds.forEach(function(d, i) {
+                    
+                    html += '<div class="keyDiv"><span class="keyCircle" style="background: ' + self.keyColors[i] + '"></span>';
+                    html += ' <span class="keyText">' + d  + '</span></div>';
+                })
+
+            d3.select('#keyContainer').html(html);
+        }
+
         if (this.scaleType === "quantile") {
+
+            this.keySvg = d3.select("#keyContainer").append("svg")
+                .attr("width", self.keyWidth)
+                .attr("height", "40px")
+                .attr("id", "keySvg")
 
             this.keyColors.forEach(function(d, i) {
 

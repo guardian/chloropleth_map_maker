@@ -60,6 +60,25 @@
 		margin-bottom:10px;
 	}
 
+	 .keyCircle {
+	    width:12px;
+	    height:12px;
+	    border-radius: 50%;
+	    display: inline-block;
+	  }
+
+	  .keySymbol{
+	    width:12px;
+	    height:12px;
+	/*    margin-bottom: 5px;*/
+	    display: inline-block;
+	  }
+
+	  .keyDiv {
+	    display: inline-block;
+	    margin-left:10px;
+	  }
+
 	.placeText {
 		font-family: 'Guardian Text Sans Web',Arial;
 		fill: #000000;
