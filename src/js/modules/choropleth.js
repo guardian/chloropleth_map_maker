@@ -69,7 +69,8 @@ export class Choropleth {
 
         });
 
-        // //console.log(this.database.data)
+        this.hasLabels = (self.database.labels.length > 0) ? true : false ;
+
         /*
         Get the name of the topojson object
         */
@@ -290,8 +291,6 @@ export class Choropleth {
 
         var output = `Scale type: ${this.scaleType}\nMin: ${this.min}\nMax: ${this.max}\nMedian: ${this.median}\nMean: ${this.mean}\n\n------------------`
 
-        //console.log(output)
-
     }
 
     keygen() {
@@ -446,10 +445,6 @@ export class Choropleth {
 
             this.keyWidth = document.querySelector("#keyContainer1").getBoundingClientRect().width - 10
 
-            // if (this.width < 480) {
-            //     this.keyWidth = this.width - 10
-            // }
-
             this.keySquare = this.keyWidth / 6;
 
             this.keySvg1 = d3.select("#keyContainer1").append("svg")
@@ -467,7 +462,6 @@ export class Choropleth {
                 .attr("height", "40px")
                 .attr("id", "keySvg3")        
 
-
             colBlue.forEach(function(d, i) {
 
                 self.keySvg1.append("rect")
@@ -480,14 +474,6 @@ export class Choropleth {
             })
 
             marginQuint.forEach(function(d, i) {
-
-                // if (i === 0) {
-                //     self.keySvg1.append("text")
-                //         .attr("x", 0)
-                //         .attr("text-anchor", "start")
-                //         .attr("y", height)
-                //         .attr("class", "keyLabel").text(0)
-                // }
 
                 self.keySvg1.append("text")
                     .attr("x", (i) * self.keySquare)
@@ -508,14 +494,6 @@ export class Choropleth {
             })
 
             marginQuint.forEach(function(d, i) {
-
-                // if (i === 0) {
-                //     self.keySvg2.append("text")
-                //         .attr("x", 0)
-                //         .attr("text-anchor", "start")
-                //         .attr("y", height)
-                //         .attr("class", "keyLabel").text(0)
-                // }
 
                 self.keySvg2.append("text")
                     .attr("x", (i) * self.keySquare)
@@ -538,14 +516,6 @@ export class Choropleth {
 
             marginQuint.forEach(function(d, i) {
 
-                //  if (i === 0) {
-                //     self.keySvg3.append("text")
-                //         .attr("x", 0)
-                //         .attr("text-anchor", "start")
-                //         .attr("y", height)
-                //         .attr("class", "keyLabel").text(0)
-                // }
-
                 self.keySvg3.append("text")
                     .attr("x", (i) * self.keySquare)
                     .attr("text-anchor", "start")
@@ -561,10 +531,6 @@ export class Choropleth {
 
         var self = this
 
-        // d3.selectAll(`.circles`)
-        //     .style("display", (d) => { return (d.properties.scalerank < self.zoomLevel) ? "block" : "none"})
-        //     .style("font-size", (d) => { return 11 / self.zoomLevel + "px"})
-        //     .attr("r", (d) => { return 1 / self.zoomLevel + "px"})
         d3.selectAll(`.labels`)
             .style("display", (d) => { return (d.properties.scalerank < self.zoomLevel) ? "block" : "none"})
             .style("font-size", (d) => { return 11 / self.zoomLevel + "px"})
@@ -626,6 +592,18 @@ export class Choropleth {
 
         }
 
+        svg.append("svg:defs").append("svg:marker")
+            .attr("id", "triangle")
+            .attr("refX", 6)
+            .attr("refY", 6)
+            .attr("markerWidth", 30)
+            .attr("markerHeight", 30)
+            .attr("markerUnits","userSpaceOnUse")
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M 0 0 12 6 0 12 3 6")
+            .style("fill", "black");
+
         var tooltip = d3.select("#mapContainer").append("div")
             .attr("class", "tooltip")
             .style("position", "absolute")
@@ -649,12 +627,10 @@ export class Choropleth {
                 }
 
                 else if (self.scaleType === "election" ) {
-                    // //console.log(d.properties)
                     return (d.properties.Margin!=null) ? self.color(d.properties.Margin, d.properties['Notional incumbent']) : 'lightgrey' ;   
                 }
 
                 else if (self.scaleType === "swing" ) {
-                    console.log(d.properties["2PPSwing"])
                     return (d.properties["2PPSwing"]!=null) ? self.color(d.properties["2PPSwing"], d.properties['Prediction']) : 'lightgrey' ;   
                 }
 
@@ -670,16 +646,6 @@ export class Choropleth {
             .attr("d", path(topojson.mesh(self.boundaries, self.boundaries.objects[self.database.topoKey])));
         }
 
-        // features.selectAll("circle")
-        //     .data(self.places.features)
-        //     .enter()
-        //     .append("circle")
-        //     .attr("class","circles")
-        //     .attr("cx", (d) => self.projection([d.properties.longitude, d.properties.latitude])[0])
-        //     .attr("cy", (d) => self.projection([d.properties.longitude, d.properties.latitude])[1])
-        //     .attr("r", "1px")
-        //     .style("display", (d) => { return (d.properties.scalerank < self.zoomLevel) ? "block" : "none"})
-
         features.selectAll("text")
             .data(self.places.features)
             .enter()
@@ -691,6 +657,36 @@ export class Choropleth {
             .style("display", (d) => { return (d.properties.scalerank < self.zoomLevel) ? "block" : "none"})
 
         this.keygen()
+
+        //145.4866862   -22.2187986 145.4866862 -22.2187986
+
+        /*
+        if (self.hasLabels) {
+
+            for (var i = 0; i < self.database.labels.length; i++) {
+
+                console.log("Added one label")
+
+                features.append("line")
+                    .attr("x1",  self.projection([+self.database.labels[i].lon_end, +self.database.labels[i].lat_end])[0])
+                    .attr("y1", self.projection([+self.database.labels[i].lon_end, +self.database.labels[i].lat_end])[1])
+                    .attr("x2", self.projection([+self.database.labels[i].lon_start, +self.database.labels[i].lat_start])[0])
+                    .attr("y2", self.projection([+self.database.labels[i].lon_start, +self.database.labels[i].lat_start])[1])
+
+                    .attr("stroke-width", 1)
+                    .attr("stroke", "black")
+                    .attr("marker-end", "url(#triangle)")
+
+                features.append("text")
+                    .text((d) => self.database.labels[i].text)
+                    .attr("x", self.projection([+self.database.labels[i].lon_end, +self.database.labels[i].lat_end])[0] + 10)
+                    .attr("y", self.projection([+self.database.labels[i].lon_end, +self.database.labels[i].lat_end])[1] + 10)
+                    .attr("class","labels")
+
+
+            }
+
+        }*/
    
         function tooltipMove(d) {
             var leftOffset = 0
