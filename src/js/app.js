@@ -14,7 +14,7 @@ const app = {
 	},{
 		"name" : "sa3",
 		"url" : "https://interactive.guim.co.uk/gis/sa3.json",
-		"key" : "SA3_2016_AUST"
+		"key" : "SA3_CODE16"
 	}],
 
 	init: () => {
