@@ -15,7 +15,24 @@ const app = {
 		"name" : "sa3",
 		"url" : "https://interactive.guim.co.uk/gis/sa3.json",
 		"key" : "SA3_NAME16"
-	}],
+	},
+	{
+		"name" : "nz_sa2",
+		"url" : "https://interactive.guim.co.uk/gis/nz_sa2.json",
+		"key" : "SA22019_V1"
+	},
+	{
+		"name" : "act-suburbs",
+		"url" : "https://interactive.guim.co.uk/gis/act-suburbs.json",
+		"key" : "suburbs-ac"
+	},
+	{
+		"name" : "lga-2020",
+		"url" : "https://interactive.guim.co.uk/gis/lga-2020.json",
+		"key" : "LGA_CODE20"
+	}
+
+	],
 
 	init: () => {
 
@@ -36,21 +53,37 @@ const app = {
 
 	loader: (key) => {
 
+        // Promise.all([
+        //     d3.json('https://interactive.guim.co.uk/docsdata/' + key + '.json'),
+        //     d3.json('<%= path %>/assets/places_aus.json')
+        //     d3.json('<%= path %>/assets/places_nz.json')
+        // ])
+        // .then((results) =>  {
+        //     app.processor(results[0].sheets,results[1],results[2])
+        // });
+
         Promise.all([
-            d3.json('https://interactive.guim.co.uk/docsdata/' + key + '.json'),
-            d3.json('<%= path %>/assets/places.json')
+            d3.json('https://interactive.guim.co.uk/docsdata/' + key + '.json')
         ])
         .then((results) =>  {
-            app.processor(results[0].sheets,results[1])
+            app.processor(results[0].sheets)
         });
+
 
 	},
 
-	processor: (data, places) => {
+	processor: (data) => {
 
 		let boundary = app.topojson.find((datum) => datum.name === data.settings[0].boundary)
+		let place = data.settings[0].place
 
-		app.gis(data, boundary.url, boundary.key, places)
+		console.log(boundary)
+		Promise.all([
+            d3.json(`<%= path %>/assets/places_${place}.json`)
+        ])
+        .then((places) =>  {
+            app.gis(data, boundary.url, boundary.key, places[0])
+        });
 
 	},
 

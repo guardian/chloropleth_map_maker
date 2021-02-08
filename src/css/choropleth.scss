@@ -4,13 +4,18 @@
 
 	background: #FFF;
 	max-width:1200px;
-	border-top: 0.0625rem solid #dcdcdc;
-	border-bottom: 0.0625rem solid #dcdcdc;
+	border-top: 1px solid #dcdcdc;
+	border-bottom: 1px solid #dcdcdc;
 
-	h2 {
-		font-family: "Guardian Headline Full",Georgia,serif;
-		font-size:20px;
-	}
+	.chartTitle {
+	    font-size: 20px;
+	    line-height: 28px;
+	    font-weight: 600;
+	    -webkit-font-smoothing: antialiased;
+	    color: #333333;
+	    font-family: "GH Guardian Headline", Georgia, serif;
+	    margin-bottom: 2px;
+  	}
 
 	#mapContainer {
 		position: relative; 
@@ -47,11 +52,12 @@
 		color:#767676;
 	}
 
-	.subtitle {
-		font-family: 'Guardian Text Sans Web',Arial;
-		color:#767676;
-		margin-bottom: 15px;
-	}
+	 .subTitle {
+    font-size: 16px;
+    line-height: 20px;
+    color: #333333;
+    font-family: "Guardian Egyptian Web", Georgia, serif;
+  }
 
 	.keyText {
 		font-family: 'Guardian Text Sans Web',Arial;
