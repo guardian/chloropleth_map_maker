@@ -30,15 +30,15 @@ const app = {
 	},{
 		"name" : "lga11",
 		"url" : "https://interactive.guim.co.uk/gis/lga11.json",
-		"key" : "lga11"
+		"key" : "LGA_NAME11"
 	},{
 		"name" : "lga16",
 		"url" : "https://interactive.guim.co.uk/gis/lga16.json",
-		"key" : "lga16"
+		"key" : "LGA_CODE16"
 	},{
 		"name" : "gdam",
 		"url" : "https://interactive.guim.co.uk/gis/gdam.json",
-		"key" : "gdam"
+		"key" : "CC_2"
 	}],
 
 	init: () => {
