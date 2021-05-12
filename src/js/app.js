@@ -15,6 +15,18 @@ const app = {
 		"name" : "sa3",
 		"url" : "https://interactive.guim.co.uk/gis/sa3.json",
 		"key" : "SA3_NAME16"
+	},{
+		"name" : "lga11",
+		"url" : "https://interactive.guim.co.uk/gis/lga11.json",
+		"key" : "lga11"
+	},{
+		"name" : "lga16",
+		"url" : "https://interactive.guim.co.uk/gis/lga16.json",
+		"key" : "lga16"
+	},{
+		"name" : "gdam",
+		"url" : "https://interactive.guim.co.uk/gis/gdam.json",
+		"key" : "gdam"
 	}],
 
 	init: () => {
