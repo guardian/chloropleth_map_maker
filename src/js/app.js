@@ -28,9 +28,9 @@ const app = {
 		"url" : "https://interactive.guim.co.uk/gis/lga-2020.json",
 		"key" : "LGA_CODE20"
 	},{
-		"name" : "lga11",
-		"url" : "https://interactive.guim.co.uk/gis/lga11.json",
-		"key" : "LGA_NAME11"
+		"name" : "lgas-2011",
+		"url" : "https://interactive.guim.co.uk/gis/lgas-2011.json",
+		"key" : "LGA_CODE11"
 	},{
 		"name" : "lga16",
 		"url" : "https://interactive.guim.co.uk/gis/lga16.json",
@@ -52,7 +52,7 @@ const app = {
 		} else {
 
 			// This is for testing only
-			app.loader("1ipIxJ_CCQfV3DDqEYdmrKdx3bJQJVkQA1XPtb0gyMmE")
+			app.loader("1SspXkvUC44db2EoP3lzqCEOGgb0-Ni9kqlV9hUva_rU")
 			
 		}
 
@@ -83,6 +83,10 @@ const app = {
 
 		let boundary = app.topojson.find((datum) => datum.name === data.settings[0].boundary)
 		let place = data.settings[0].place
+
+		place = (place===undefined) ? 'au' : place ;
+
+		console.log(place)
 
 		console.log(boundary)
 		Promise.all([
