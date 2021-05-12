@@ -28,8 +28,8 @@ const app = {
 		"url" : "https://interactive.guim.co.uk/gis/lga-2020.json",
 		"key" : "LGA_CODE20"
 	},{
-		"name" : "lgas-2011",
-		"url" : "https://interactive.guim.co.uk/gis/lgas-2011.json",
+		"name" : "lga-2011",
+		"url" : "https://interactive.guim.co.uk/gis/lga-2011.json",
 		"key" : "LGA_CODE11"
 	},{
 		"name" : "lga16",
