@@ -38,7 +38,7 @@ const app = {
 	},{
 		"name" : "gdam",
 		"url" : "https://interactive.guim.co.uk/gis/gdam.json",
-		"key" : "CC_2"
+		"key" : "GID_2"
 	}],
 
 	init: () => {
@@ -52,7 +52,7 @@ const app = {
 		} else {
 
 			// This is for testing only
-			app.loader("1SspXkvUC44db2EoP3lzqCEOGgb0-Ni9kqlV9hUva_rU")
+			app.loader("1AN4rZITFr7zJAxyfbuqL5GkxeJnAIoHUcpPMuIFDCdI")
 			
 		}
 
