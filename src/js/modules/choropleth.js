@@ -8,7 +8,7 @@ import Ractive from 'ractive'
 export class Choropleth {
 
 	constructor(data, boundaries, id, places) {
-
+        console.log(places)
         var self = this
 
         this.database = data
@@ -69,7 +69,9 @@ export class Choropleth {
 
         });
 
-        this.hasLabels = (self.database.labels.length > 0) ? true : false ;
+        console.log
+
+        // this.hasLabels = (self.database.labels.length > 0) ? true : false ;
 
         /*
         Get the name of the topojson object
@@ -93,6 +95,12 @@ export class Choropleth {
 
         this.database.currentKey = self.database.mapping[0].data;
 
+
+        // Centre Lat, Lon, Zoom
+
+        this.database.centreLat = +self.database.mapping[0].centreLat;
+        this.database.centreLon = +self.database.mapping[0].centreLon;
+        this.database.zoomScale = +self.database.mapping[0].zoomScale;
 
         /*
         Check to see if user is on a mobile.
@@ -295,20 +303,23 @@ export class Choropleth {
     keygen() {
 
         var self = this
+        var keyLeftMargin = 10
+        var keyRightMargin = 20
+        this.svgWidth = 300
 
-        this.keyWidth = 290;
 
-        if (this.keyWidth > this.width - 10) {
-            this.keyWidth = this.width - 10
+        console.log(this.keyWidth)
+        if (this.svgWidth > this.width - 10) {
+            this.svgWidth = this.width - 10
         }
+
+        this.keyWidth = this.svgWidth - keyRightMargin - keyLeftMargin
 
         d3.select("#keyContainer").html("");
         d3.select("#keyContainer svg").remove();
         d3.select("#keyContainer1 svg").remove();
         d3.select("#keyContainer2 svg").remove();
         d3.select("#keyContainer3 svg").remove();
-
-       
         
         this.keySquare = this.keyWidth / 10;
 
@@ -326,12 +337,12 @@ export class Choropleth {
             this.keySquare = this.keyWidth / 6;
 
             this.keySvg1 = d3.select("#keyContainer1").append("svg")
-                .attr("width", self.keyWidth)
+                .attr("width", self.svgWidth)
                 .attr("height", "40px")
                 .attr("id", "keySvg1")
 
             this.keySvg2 = d3.select("#keyContainer2").append("svg")
-                .attr("width", self.keyWidth)
+                .attr("width", self.svgWidth)
                 .attr("height", "40px")
                 .attr("id", "keySvg2")
 
@@ -380,7 +391,7 @@ export class Choropleth {
         if (this.scaleType === "threshold") {
 
             this.keySvg = d3.select("#keyContainer").append("svg")
-                .attr("width", self.keyWidth)
+                .attr("width", self.svgWidth)
                 .attr("height", "40px")
                 .attr("id", "keySvg")
 
@@ -388,7 +399,7 @@ export class Choropleth {
             this.keyColors.forEach(function(d, i) {
 
                 self.keySvg.append("rect")
-                    .attr("x", self.keySquare * i)
+                    .attr("x", (self.keySquare * i) + keyLeftMargin)
                     .attr("y", 0)
                     .attr("width", self.keySquare)
                     .attr("height", barHeight)
@@ -397,19 +408,68 @@ export class Choropleth {
             })
 
             var threshLen = this.thresholds.length
+
             this.thresholds.forEach(function(d, i) {
 
-                // if (i != threshLen -1) {
+                if (i != threshLen -1) {
                     self.keySvg.append("text")
-                    .attr("x", (i + 1) * self.keySquare)
+                    .attr("x", (i + 1 ) * self.keySquare + keyLeftMargin)
                     .attr("text-anchor", "middle")
                     .attr("y", height)
                     .attr("class", "keyLabel").text(self.toolbelt.niceNumber(d))
-                // }
+                }
              
             })
 
         }
+
+        if (this.scaleType === "linear") {
+
+            this.keySvg = d3.select("#keyContainer").append("svg")
+                .attr("width", self.svgWidth)
+                .attr("height", "40px")
+                .attr("id", "keySvg")
+
+            var legend = this.keySvg.append("defs")
+              .append("svg:linearGradient")
+              .attr("id", "gradient")
+              .attr("x1", "0%")
+              .attr("y1", "100%")
+              .attr("x2", "100%")
+              .attr("y2", "100%")
+              .attr("spreadMethod", "pad");
+
+            legend.append("stop")
+              .attr("offset", "0%")
+              .attr("stop-color", this.keyColors[0])
+              .attr("stop-opacity", 1);
+
+            legend.append("stop")
+              .attr("offset", "100%")
+              .attr("stop-color", this.keyColors[1])
+              .attr("stop-opacity", 1);
+
+           this.keySvg.append("rect")
+                .attr("y", 0)
+                .attr("x", keyLeftMargin)
+              .attr("width", self.keyWidth)
+              .attr("height", barHeight)
+              .style("fill", "url(#gradient)")
+
+            self.keySvg.append("text")
+                .attr("x", 10)
+                .attr("text-anchor", "middle")
+                .attr("y", height)
+                .attr("class", "keyLabel").text(self.toolbelt.niceNumber(this.min))  
+
+            self.keySvg.append("text")
+                .attr("x", self.keyWidth + keyLeftMargin)
+                .attr("text-anchor", "middle")
+                .attr("y", height)
+                .attr("class", "keyLabel").text(self.toolbelt.niceNumber(this.max))      
+
+        }
+
 
         if (this.scaleType === "ordinal") {
             var html = '';
@@ -433,7 +493,7 @@ export class Choropleth {
             this.keyColors.forEach(function(d, i) {
 
                 self.keySvg.append("rect")
-                    .attr("x", self.keySquare * i)
+                    .attr("x", (self.keySquare * i) + keyLeftMargin) 
                     .attr("y", 0)
                     .attr("width", self.keySquare)
                     .attr("height", 15)
@@ -551,8 +611,20 @@ export class Choropleth {
 
         var self = this
 
+        var placeLabelThreshold = 2
+
+        if (self.width <= 620) {
+            placeLabelThreshold = 1
+        }
+
+        console.log("zoom", self.zoomLevel)
+
         d3.selectAll(`.labels`)
-            .style("display", (d) => { return (d.properties.scalerank < self.zoomLevel) ? "block" : "none"})
+            .style("display", (d) => { 
+
+                return (d.properties.scalerank - placeLabelThreshold < self.zoomLevel) ? "block" : "none"
+
+            })
             .style("font-size", (d) => { return 11 / self.zoomLevel + "px"})
             .attr("x", (d) => self.projection([d.properties.longitude, d.properties.latitude])[0])
             .attr("y", (d) => self.projection([d.properties.longitude, d.properties.latitude])[1])
@@ -637,13 +709,30 @@ export class Choropleth {
         features.append("path").datum(graticule)
             .attr("class", "graticule")
             .attr("d", path);
+
+        console.log("topoKey",self.database.topoKey)    
         
         features.append("g").selectAll("path").data(topojson.feature(self.boundaries, self.boundaries.objects[self.database.topoKey]).features).enter().append("path")
             .attr("class", self.database.topoKey + " mapArea")
             .attr("fill", function(d) {
 
                 if (self.scaleType != "election"  && self.scaleType != "swing") {
-                    return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' ;
+
+                    if (self.scaleType == "threshold" ) {
+                        if (d.properties[self.database.currentKey] === 0 | d.properties[self.database.currentKey] === "0") {
+                            return "#FFFFFF";
+                        }
+
+                        else {
+                            return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' ;    
+                        }
+                        
+                    }
+
+                    else {
+                        return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' ;    
+                    }
+                    
                 }
 
                 else if (self.scaleType === "election" ) {
@@ -655,7 +744,7 @@ export class Choropleth {
                 }
 
             })
-            .attr("d", path)
+            .attr("d",path)
             .on("mouseover", tooltipIn)
             .on("mouseout", tooltipOut)
         
@@ -666,6 +755,12 @@ export class Choropleth {
             .attr("d", path(topojson.mesh(self.boundaries, self.boundaries.objects[self.database.topoKey])));
         }
 
+        var placeLabelThreshold = 3
+
+        if (self.width <= 620) {
+            placeLabelThreshold = 1
+        }
+
         features.selectAll("text")
             .data(self.places.features)
             .enter()
@@ -674,7 +769,11 @@ export class Choropleth {
             .attr("x", (d) => self.projection([d.properties.longitude, d.properties.latitude])[0])
             .attr("y", (d) => self.projection([d.properties.longitude, d.properties.latitude])[1])
             .attr("class","labels")
-            .style("display", (d) => { return (d.properties.scalerank < self.zoomLevel) ? "block" : "none"})
+            .style("display", (d) => { 
+
+                return (d.properties.scalerank - placeLabelThreshold < self.zoomLevel) ? "block" : "none"
+
+            })
 
         this.keygen()
 
@@ -766,7 +865,25 @@ export class Choropleth {
         }
 
         function tooltipIn(d) {
-            d3.select(".tooltip").html((d.properties[self.database.currentKey]===null) ? "No data available" : self.toolbelt.mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties})).style("visibility", "visible");
+
+            console.log(d.properties[self.database.currentKey])
+
+            if (d.properties[self.database.currentKey]===0) {
+                d.properties[self.database.currentKey] = "0";
+                d3.select(".tooltip").html(self.toolbelt.mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties})).style("visibility", "visible");
+            }
+
+            else if (d.properties[self.database.currentKey]===undefined) {
+
+
+                d3.select(".tooltip").html("No data available").style("visibility", "visible");
+            }
+
+            else {
+                d3.select(".tooltip").html((d.properties[self.database.currentKey]===null) ? "No data available" : self.toolbelt.mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties})).style("visibility", "visible");       
+            }
+            
+        
         }
 
         function tooltipOut(d) {
@@ -812,7 +929,7 @@ export class Choropleth {
             features.style("stroke-width", 0.5 / d3.event.transform.k + "px");
             features.attr("transform", d3.event.transform);
             features.selectAll(".placeContainers").style("display", function(d) {
-                return (d['properties']['scalerank'] < d3.event.transform.k) ? "block" : "none" ;
+                return (d['properties']['scalerank'] - 3 < d3.event.transform.k) ? "block" : "none" ;
             })
 
             features.selectAll(".placeText")
