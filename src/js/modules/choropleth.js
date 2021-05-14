@@ -305,6 +305,20 @@ export class Choropleth {
         var self = this
         var keyLeftMargin = 10
         var keyRightMargin = 20
+
+        // this.scaleType = self.database.mapping[self.database.currentIndex].scale.toLowerCase()
+        
+        var keyText = null
+        if (this.database.mapping[self.database.currentIndex]['keyText']) {
+            if (this.database.mapping[self.database.currentIndex]['keyText'] != "") {
+                keyText = this.database.mapping[self.database.currentIndex]['keyText']
+            }
+        }
+
+        if (keyText != null) {
+            d3.select("#keyText").html(keyText)    
+        }
+
         this.svgWidth = 300
 
 
@@ -411,7 +425,9 @@ export class Choropleth {
 
             this.thresholds.forEach(function(d, i) {
 
-                if (i != threshLen -1) {
+                // I keep changing this between removing the last figure and not removing it and I can't remember why
+
+                if (i != threshLen) {
                     self.keySvg.append("text")
                     .attr("x", (i + 1 ) * self.keySquare + keyLeftMargin)
                     .attr("text-anchor", "middle")
