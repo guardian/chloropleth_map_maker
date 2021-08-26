@@ -15,7 +15,13 @@ const app = {
 		"name" : "sa3",
 		"url" : "https://interactive.guim.co.uk/gis/sa3.json",
 		"key" : "SA3_NAME16"
-	},{
+	},
+	{
+		"name" : "sa4",
+		"url" : "https://interactive.guim.co.uk/gis/sa4.json",
+		"key" : "SA4_CODE16"
+	},
+	{
 		"name" : "nz_sa2",
 		"url" : "https://interactive.guim.co.uk/gis/nz_sa2.json",
 		"key" : "SA22019_V1"
