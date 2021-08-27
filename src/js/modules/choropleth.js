@@ -29,7 +29,7 @@ export class Choropleth {
 
                 let features = places.features.filter(item => {
 
-                    return item.properties["State"] == "NSW"
+                    return item.properties[filters[0]] == filters[1]
                     
                 })
 
