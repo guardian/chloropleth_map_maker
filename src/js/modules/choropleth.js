@@ -19,6 +19,26 @@ export class Choropleth {
 
         this.places = places
 
+        if (this.database.settings[0].filter!="") {
+
+            let filters = this.database.settings[0].filter.split(",")
+
+            filters = filters.map(item => item.trim())
+
+            if (filters.length == 2) {
+
+                let features = places.features.filter(item => {
+
+                    return item.properties["State"] == "NSW"
+                    
+                })
+
+                this.places.features = features
+
+            }
+
+        }
+
         this.database.currentIndex = 0
 
         this.zoomLevel = 1
