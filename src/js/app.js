@@ -1,44 +1,53 @@
 import * as d3 from "d3"
 import { Choropleth } from './modules/choropleth'
+import template from '../templates/template.json'
 
 const app = {
 
 	topojson: [{
-		"name" : "federal",
-		"url" : "https://interactive.guim.co.uk/gis/australian_federal_electorates.json",
-		"key" : "boundary"
-	},{
-		"name" : "sa2",
-		"url" : "https://interactive.guim.co.uk/gis/sa2.json",
-		"key" : "SA2_MAIN16"
-	},{
-		"name" : "sa3",
-		"url" : "https://interactive.guim.co.uk/gis/sa3.json",
-		"key" : "SA3_NAME16"
-	},{
-		"name" : "nz_sa2",
-		"url" : "https://interactive.guim.co.uk/gis/nz_sa2.json",
-		"key" : "SA22019_V1"
-	},{
-		"name" : "act-suburbs",
-		"url" : "https://interactive.guim.co.uk/gis/act-suburbs.json",
-		"key" : "suburbs-ac"
-	},{
-		"name" : "lga-2020",
-		"url" : "https://interactive.guim.co.uk/gis/lga-2020.json",
-		"key" : "LGA_CODE20"
-	},{
-		"name" : "lga-2011",
-		"url" : "https://interactive.guim.co.uk/gis/lga-2011.json",
-		"key" : "LGA_CODE11"
-	},{
-		"name" : "lga16",
-		"url" : "https://interactive.guim.co.uk/gis/lga16.json",
-		"key" : "LGA_CODE16"
-	},{
-		"name" : "gdam",
-		"url" : "https://interactive.guim.co.uk/gis/gdam.json",
-		"key" : "GID_2"
+		"name": "federal",
+		"url": "https://interactive.guim.co.uk/gis/australian_federal_electorates.json",
+		"key": "boundary"
+	}, {
+		"name": "sa2",
+		"url": "https://interactive.guim.co.uk/gis/sa2.json",
+		"key": "SA2_MAIN16"
+	}, {
+		"name": "sa3",
+		"url": "https://interactive.guim.co.uk/gis/sa3.json",
+		"key": "SA3_NAME16"
+	}, {
+		"name": "sa4",
+		"url": "https://interactive.guim.co.uk/gis/sa4.json",
+		"key": "SA4_CODE16"
+	}, {
+		"name": "nz_sa2",
+		"url": "https://interactive.guim.co.uk/gis/nz_sa2.json",
+		"key": "SA22019_V1"
+	}, {
+		"name": "act-suburbs",
+		"url": "https://interactive.guim.co.uk/gis/act-suburbs.json",
+		"key": "suburbs-ac"
+	}, {
+		"name": "lga-2020",
+		"url": "https://interactive.guim.co.uk/gis/lga-2020.json",
+		"key": "LGA_CODE20"
+	}, {
+		"name": "lga-2011",
+		"url": "https://interactive.guim.co.uk/gis/lga-2011.json",
+		"key": "LGA_CODE11"
+	}, {
+		"name": "lga16",
+		"url": "https://interactive.guim.co.uk/gis/lga16.json",
+		"key": "LGA_CODE16"
+	}, {
+		"name": "gdam",
+		"url": "https://interactive.guim.co.uk/gis/gdam.json",
+		"key": "GID_2"
+	}, {
+		"name": "nsw-lhd",
+		"url": "https://interactive.guim.co.uk/gis/nsw-lhd.json",
+		"key": "LHN_Code"
 	}],
 
 	init: () => {
@@ -52,7 +61,9 @@ const app = {
 		} else {
 
 			// This is for testing only
-			app.loader("1AN4rZITFr7zJAxyfbuqL5GkxeJnAIoHUcpPMuIFDCdI")
+			app.loader("1jZLBeJnoGl4brYdF6AB-zOO94pvrCLflb9ojTA5Algk")
+
+			
 			
 		}
 
@@ -73,10 +84,25 @@ const app = {
             d3.json('https://interactive.guim.co.uk/docsdata/' + key + '.json')
         ])
         .then((results) =>  {
-            app.processor(results[0].sheets)
+
+        	var merged = app.combine(template, results[0])
+
+            app.processor(merged.sheets)
         });
 
 
+	},
+
+	combine: (to, from) => {
+
+	    for (const n in from) {
+	        if (typeof to[n] != 'object') {
+	            to[n] = from[n];
+	        } else if (typeof from[n] == 'object') {
+	            to[n] = app.combine(to[n], from[n]);
+	        }
+	    }
+	    return to;
 	},
 
 	processor: (data) => {

@@ -19,6 +19,26 @@ export class Choropleth {
 
         this.places = places
 
+        if (this.database.settings[0].filter!="") {
+
+            let filters = this.database.settings[0].filter.split(",")
+
+            filters = filters.map(item => item.trim())
+
+            if (filters.length == 2) {
+
+                let features = places.features.filter(item => {
+
+                    return item.properties[filters[0]] == filters[1]
+                    
+                })
+
+                this.places.features = features
+
+            }
+
+        }
+
         this.database.currentIndex = 0
 
         this.zoomLevel = 1
@@ -98,9 +118,28 @@ export class Choropleth {
 
         // Centre Lat, Lon, Zoom
 
-        this.database.centreLat = +self.database.mapping[0].centreLat;
-        this.database.centreLon = +self.database.mapping[0].centreLon;
-        this.database.zoomScale = +self.database.mapping[0].zoomScale;
+        // Defaults to center of Australia, otherwise use set values    
+
+        this.database.centreLat = -28
+        
+        if (self.database.mapping[0].centreLat) {
+            this.database.centreLat = +self.database.mapping[0].centreLat;
+        }
+        
+        this.database.centreLon = 135
+
+        if (self.database.mapping[0].centreLat) {
+            this.database.centreLon = +self.database.mapping[0].centreLon;
+        }
+        
+        // rename this to zoomLevel later
+
+        this.database.zoomScale = null
+        
+        if (self.database.mapping[0].zoomScale) {
+            this.database.zoomScale = +self.database.mapping[0].zoomScale;
+        }
+
 
         /*
         Check to see if user is on a mobile.
@@ -665,8 +704,10 @@ export class Choropleth {
 
         var scaleFactor = 1;
 
+        console.log(self.database.centreLat, self.database.centreLon, self.database.zoomScale)
+
         self.projection = d3.geoMercator()
-            .center([135, -28.0])
+            .center([self.database.centreLon, self.database.centreLat])
             .scale(self.width * 0.85)
             .translate([self.width / 2, self.height / 2])
 
@@ -917,6 +958,8 @@ export class Choropleth {
         d3.select("#zoomToggle").on("click", function(d) {
             toggleZoom();
         });
+
+        self.zoom.scaleBy(svg, self.database.zoomScale);
 
         function toggleZoom() {
             if (self.database.zoomOn == false) {
