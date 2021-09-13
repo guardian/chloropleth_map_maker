@@ -1,0 +1,4 @@
+nvm install 11.15.0
+nvm use 11.15.0 #just in case it didn't automatically select the 11.15.0 as the main node.
+nvm uninstall 13.1.0
+npm rebuild node-sass
