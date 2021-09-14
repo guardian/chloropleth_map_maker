@@ -48,6 +48,10 @@ const app = {
 		"name": "nsw-lhd",
 		"url": "https://interactive.guim.co.uk/gis/nsw-lhd.json",
 		"key": "LHN_Code"
+	},{
+		"name": "frankenstein_renamed",
+		"url": 'https://interactive.guim.co.uk/gis/frankenstein.json',
+		"key": "id"
 	}],
 
 	init: () => {
