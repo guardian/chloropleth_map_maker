@@ -49,7 +49,7 @@ const app = {
 		"url": "https://interactive.guim.co.uk/gis/nsw-lhd.json",
 		"key": "LHN_Code"
 	},{
-		"name": "frankenstein_renamed",
+		"name": "frankenstein-renamed",
 		"url": 'https://interactive.guim.co.uk/gis/frankenstein.json',
 		"key": "id"
 	}],
@@ -65,7 +65,7 @@ const app = {
 		} else {
 
 			// This is for testing only
-			app.loader("1jZLBeJnoGl4brYdF6AB-zOO94pvrCLflb9ojTA5Algk")
+			app.loader("1LlQOTiG9CdIWeK6dV_SR9EdudPiJfn9eOrvzIE7X6Zc")
 
 			
 			
@@ -112,13 +112,11 @@ const app = {
 	processor: (data) => {
 
 		let boundary = app.topojson.find((datum) => datum.name === data.settings[0].boundary)
+		
 		let place = data.settings[0].place
 
 		place = (place===undefined) ? 'au' : place ;
 
-		console.log(place)
-
-		console.log(boundary)
 		Promise.all([
             d3.json(`<%= path %>/assets/places_${place}.json`)
         ])
