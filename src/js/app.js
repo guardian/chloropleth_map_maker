@@ -52,6 +52,10 @@ const app = {
 		"name": "frankenstein-renamed",
 		"url": 'https://interactive.guim.co.uk/gis/frankenstein.json',
 		"key": "id"
+	},{
+		"name": "melb_suburbs",
+		"url": 'https://interactive.guim.co.uk/gis/melb_suburbs.json',
+		"key": "Suburb"
 	}],
 
 	init: () => {
