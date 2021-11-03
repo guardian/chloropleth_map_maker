@@ -53,9 +53,13 @@ const app = {
 		"url": 'https://interactive.guim.co.uk/gis/frankenstein.json',
 		"key": "id"
 	},{
-		"name": "melb_suburbs",
+		"name": "melb-suburbs",
 		"url": 'https://interactive.guim.co.uk/gis/melb_suburbs.json',
 		"key": "Suburb"
+	},{
+		"name": "2021_federal_boundaries",
+		"url": 'https://interactive.guim.co.uk/gis/2021_federal_boundaries.json',
+		"key": "Electorate"
 	}],
 
 	init: () => {
@@ -69,7 +73,7 @@ const app = {
 		} else {
 
 			// This is for testing only
-			app.loader("1LlQOTiG9CdIWeK6dV_SR9EdudPiJfn9eOrvzIE7X6Zc")
+			app.loader("1nvejFO-_jbIH4o6NoQj-xmTOyPvCHYcu-BsG2go_gqQ")
 
 			
 			
