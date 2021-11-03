@@ -148,7 +148,7 @@ export class Choropleth {
 
         this.database.zoomOn = (self.isMobile) ? false : true ;
 
-        this.isAndroidApp = (window.location.origin === "file://" && /(android)/i.test(navigator.userAgent) ) ? true : false ;  
+        this.isAndroidApp = (window.location.origin === "file://" && /(android)/i.test(navigator.userAgent) ) ? true : false ; 
 
         this.ractivate()
 
@@ -760,7 +760,7 @@ export class Choropleth {
             .attr("d", path);
         
         features.append("g").selectAll("path").data(topojson.feature(self.boundaries, self.boundaries.objects[self.database.topoKey]).features).enter().append("path")
-            .attr("class", self.database.topoKey + " mapArea")
+            .attr("class", `_${self.database.topoKey} mapArea`)
             .attr("fill", function(d) {
 
                 if (self.scaleType != "election"  && self.scaleType != "swing") {
@@ -1011,7 +1011,7 @@ export class Choropleth {
 
         var self = this
 
-        d3.selectAll(`.${self.database.topoKey}`).transition("changeFill")
+        d3.selectAll(`._${self.database.topoKey}`).transition("changeFill")
             .attr("fill", (d) => { return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' })
 
     }
