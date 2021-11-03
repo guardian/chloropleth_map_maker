@@ -8,7 +8,7 @@ import Ractive from 'ractive'
 export class Choropleth {
 
 	constructor(data, boundaries, id, places) {
-        console.log(places)
+
         var self = this
 
         this.database = data
@@ -88,8 +88,6 @@ export class Choropleth {
             }
 
         });
-
-        console.log
 
         // this.hasLabels = (self.database.labels.length > 0) ? true : false ;
 
@@ -336,7 +334,7 @@ export class Choropleth {
         }
 
         var output = `Scale type: ${this.scaleType}\nColours: ${self.keyColors}\nThresholds: ${self.thresholds}\nMin: ${this.min}\nMax: ${this.max}\nMedian: ${this.median}\nMean: ${this.mean}\n\n------------------`
-        console.log(output)
+
     }
 
     keygen() {
@@ -360,8 +358,6 @@ export class Choropleth {
 
         this.svgWidth = 300
 
-
-        console.log(this.keyWidth)
         if (this.svgWidth > this.width - 10) {
             this.svgWidth = this.width - 10
         }
@@ -672,8 +668,6 @@ export class Choropleth {
             placeLabelThreshold = 1
         }
 
-        console.log("zoom", self.zoomLevel)
-
         d3.selectAll(`.labels`)
             .style("display", (d) => { 
 
@@ -703,8 +697,6 @@ export class Choropleth {
         var active = d3.select(null);
 
         var scaleFactor = 1;
-
-        console.log(self.database.centreLat, self.database.centreLon, self.database.zoomScale)
 
         self.projection = d3.geoMercator()
             .center([self.database.centreLon, self.database.centreLat])
@@ -766,8 +758,6 @@ export class Choropleth {
         features.append("path").datum(graticule)
             .attr("class", "graticule")
             .attr("d", path);
-
-        console.log("topoKey",self.database.topoKey)    
         
         features.append("g").selectAll("path").data(topojson.feature(self.boundaries, self.boundaries.objects[self.database.topoKey]).features).enter().append("path")
             .attr("class", self.database.topoKey + " mapArea")
@@ -922,8 +912,6 @@ export class Choropleth {
         }
 
         function tooltipIn(d) {
-
-            console.log(d.properties[self.database.currentKey])
 
             if (d.properties[self.database.currentKey]===0) {
                 d.properties[self.database.currentKey] = "0";
