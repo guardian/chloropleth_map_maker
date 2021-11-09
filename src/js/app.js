@@ -58,10 +58,15 @@ const app = {
 	init: () => {
 
 		const key = app.getURLParams('key')
+		var location = app.getURLParams('location')
+		
+		if (!location) {
+			location = "docsdata"
+		}
 
 		if ( key != null ) {
 
-			app.loader(key)
+			app.loader(key, location)
 
 		} else {
 
@@ -72,19 +77,10 @@ const app = {
 
 	},
 
-	loader: (key) => {
-
-        // Promise.all([
-        //     d3.json('https://interactive.guim.co.uk/docsdata/' + key + '.json'),
-        //     d3.json('<%= path %>/assets/places_aus.json')
-        //     d3.json('<%= path %>/assets/places_nz.json')
-        // ])
-        // .then((results) =>  {
-        //     app.processor(results[0].sheets,results[1],results[2])
-        // });
+	loader: (key, location) => {
 
         Promise.all([
-            d3.json('https://interactive.guim.co.uk/docsdata/' + key + '.json')
+            d3.json(`https://interactive.guim.co.uk/${location}/${key}.json`)
         ])
         .then((results) =>  {
             app.processor(results[0].sheets)
@@ -156,7 +152,7 @@ const app = {
             	d3.json(`<%= path %>/assets/places_${place}.json`)
         		])
         .then((resp) =>  {
-            new Choropleth(data, resp[0], null, resp[2])
+            new Choropleth(data, resp[0], null, resp[1])
         });
 		}
        

@@ -8,14 +8,22 @@ import Ractive from 'ractive'
 export class Choropleth {
 
 	constructor(data, boundaries, overlay, places) {
-        console.log(places)
+        // console.log(places)
         var self = this
 
         this.database = data
 
         this.boundaries = boundaries
 
+        this.overlay = null
+        
+        if (overlay) {
+            this.overlay = overlay
+        }
+
         this.places = places
+
+        // console.log(this.places)
 
         this.database.currentIndex = 0
 
@@ -28,10 +36,10 @@ export class Choropleth {
         */
 
         this.database.keys = Object.keys( this.database.data[0] )
-        console.log(this.database.keys)
+        // console.log(this.database.keys)
 
         this.id = this.database.keys[0]
-
+        // console.log(this.id)
         /*
         Remove the ID column which is going to be used to map 
         items to their corresponding 
@@ -70,7 +78,6 @@ export class Choropleth {
 
         });
 
-        console.log
 
         // this.hasLabels = (self.database.labels.length > 0) ? true : false ;
 
@@ -81,6 +88,13 @@ export class Choropleth {
         this.database.topoKey = Object.keys( this.boundaries.objects )[0]
 
         this.boundaryID = Object.keys( this.boundaries.objects[this.database.topoKey].geometries[0].properties)[0]
+        // console.log(this.boundaryID)
+        if (overlay) {
+            this.overlayTopoKey = Object.keys( this.overlay.objects )[0]
+            this.overlayID = Object.keys( this.overlay.objects[this.overlayTopoKey].geometries[0].properties)[0]
+        }
+        
+
         /*
         Merge the row data from the Googledoc data table to its corresponding boundary
         */
@@ -343,7 +357,7 @@ export class Choropleth {
         this.svgWidth = 300
 
 
-        console.log(this.keyWidth)
+        // console.log(this.keyWidth)
         if (this.svgWidth > this.width - 10) {
             this.svgWidth = this.width - 10
         }
@@ -654,7 +668,7 @@ export class Choropleth {
             placeLabelThreshold = 1
         }
 
-        console.log("zoom", self.zoomLevel)
+        // console.log("zoom", self.zoomLevel)
 
         d3.selectAll(`.labels`)
             .style("display", (d) => { 
@@ -686,7 +700,7 @@ export class Choropleth {
 
         var scaleFactor = 1;
 
-        console.log(self.database.centreLat, self.database.centreLon, self.database.zoomScale)
+        // console.log(self.database.centreLat, self.database.centreLon, self.database.zoomScale)
 
         self.projection = d3.geoMercator()
             .center([self.database.centreLon, self.database.centreLat])
@@ -741,7 +755,8 @@ export class Choropleth {
             .style("z-index", "20")
             .style("visibility", "hidden")
             .style("top", "30px")
-            .style("left", "55px");
+            .style("left", "55px")
+            .html("<div id='tooltip'></div><div id='overlay'></div>")
         
         var features = svg.append("g")
 
@@ -749,9 +764,13 @@ export class Choropleth {
             .attr("class", "graticule")
             .attr("d", path);
 
-        console.log("topoKey",self.database.topoKey)    
+        // console.log("topoKey",self.database.topoKey)    
         
-        features.append("g").selectAll("path").data(topojson.feature(self.boundaries, self.boundaries.objects[self.database.topoKey]).features).enter().append("path")
+
+        var geoLayers = features.append("g")
+                            .attr("id", "geoLayers")
+
+        geoLayers.append("g").selectAll("path").data(topojson.feature(self.boundaries, self.boundaries.objects[self.database.topoKey]).features).enter().append("path")
             .attr("class", self.database.topoKey + " mapArea")
             .attr("fill", function(d) {
 
@@ -763,30 +782,68 @@ export class Choropleth {
                         }
 
                         else {
-                            return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' ;    
+                            return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : '#dcdcdc' ;    
                         }
                         
                     }
 
                     else {
-                        return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' ;    
+                        return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : '#dcdcdc' ;    
                     }
                     
                 }
 
                 else if (self.scaleType === "election" ) {
-                    return (d.properties.Margin!=null) ? self.color(d.properties.Margin, d.properties['Notional incumbent']) : 'lightgrey' ;   
+                    return (d.properties.Margin!=null) ? self.color(d.properties.Margin, d.properties['Notional incumbent']) : '#dcdcdc' ;   
                 }
 
                 else if (self.scaleType === "swing" ) {
-                    return (d.properties["2PPSwing"]!=null) ? self.color(d.properties["2PPSwing"], d.properties['Prediction']) : 'lightgrey' ;   
+                    return (d.properties["2PPSwing"]!=null) ? self.color(d.properties["2PPSwing"], d.properties['Prediction']) : '#dcdcdc' ;   
                 }
 
             })
             .attr("d",path)
+            // .on("click", () => {console.log("main layer clicked")})
             .on("mouseover", tooltipIn)
             .on("mouseout", tooltipOut)
         
+        if (this.overlay) {
+            geoLayers.append("g").selectAll("path").data(topojson.feature(self.overlay, self.overlay.objects[self.overlayTopoKey]).features).enter().append("path")
+            .attr("class", "overlay")
+            .style("fill","transparent")
+            .attr("d",path)
+            .attr("stroke-width", 1)
+            .attr("stroke", "#000")
+            .on("mouseover", passThru)
+            .on("mouseout", passThru)
+            // .on("click", () => {console.log("overlay clicked")})
+        } 
+
+        // geoLayers
+        //     .on("mouseover", tooltipIn)
+        //     .on("mouseout", tooltipOut)
+
+
+        function passThru(d) {
+
+                var newHtml = self.toolbelt.mustache(self.database.mapping[self.database.currentIndex].overlayTooltip, {...utilities, ...d.properties})
+                d3.select("#overlay").html(newHtml)
+                var e = d3.event;
+
+                var prev = this.style.pointerEvents;
+                this.style.pointerEvents = 'none';
+
+                var el = document.elementFromPoint(d3.event.x, d3.event.y);
+
+                var e2 = document.createEvent('MouseEvent');
+                e2.initMouseEvent(e.type,e.bubbles,e.cancelable,e.view, e.detail,e.screenX,e.screenY,e.clientX,e.clientY,e.ctrlKey,e.altKey,e.shiftKey,e.metaKey,e.button,e.relatedTarget);
+
+                el.dispatchEvent(e2);
+
+                this.style.pointerEvents = prev;
+            }
+              
+
         if (self.width > 480) {
             features.append("path")
             .attr("class", "mesh")
@@ -905,21 +962,24 @@ export class Choropleth {
 
         function tooltipIn(d) {
 
-            console.log(d.properties[self.database.currentKey])
+            // console.log(d)
+
+            d3.select(".tooltip").style("visibility", "visible");
 
             if (d.properties[self.database.currentKey]===0) {
                 d.properties[self.database.currentKey] = "0";
-                d3.select(".tooltip").html(self.toolbelt.mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties})).style("visibility", "visible");
+                d3.select("#tooltip").html(self.toolbelt.mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties}))
             }
 
             else if (d.properties[self.database.currentKey]===undefined) {
 
+                
+                d3.select("#tooltip").html("No data available")
 
-                d3.select(".tooltip").html("No data available").style("visibility", "visible");
             }
 
             else {
-                d3.select(".tooltip").html((d.properties[self.database.currentKey]===null) ? "No data available" : self.toolbelt.mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties})).style("visibility", "visible");       
+                d3.select("#tooltip").html((d.properties[self.database.currentKey]===null) ? "No data available" : self.toolbelt.mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties}))    
             }
             
         
@@ -928,6 +988,17 @@ export class Choropleth {
         function tooltipOut(d) {
             d3.select(".tooltip").style("visibility", "hidden");
         }
+
+        // function overlayTooltipIn(d) {
+        //     console.log("click")
+        //     // d3.select(".tooltip").style("visibility", "visible");
+            
+        // }
+
+        // function overlayTooltipOut(d) {
+        //    d3.select("#overlay").html("")
+        // }
+
 
         d3.select("#zoomIn").on("click", function(d) {
             self.zoom.scaleBy(svg.transition().duration(750), 1.5);
@@ -968,6 +1039,7 @@ export class Choropleth {
             scaleFactor = d3.event.transform.k;
             d3.selectAll(".mesh").style("stroke-width", 0.5 / d3.event.transform.k + "px");
             features.style("stroke-width", 0.5 / d3.event.transform.k + "px");
+            features.selectAll(".overlay").attr("stroke-width", 1 / d3.event.transform.k + "px");
             features.attr("transform", d3.event.transform);
             features.selectAll(".placeContainers").style("display", function(d) {
                 return (d['properties']['scalerank'] - 3 < d3.event.transform.k) ? "block" : "none" ;
