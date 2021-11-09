@@ -47,7 +47,13 @@ const app = {
 		"name": "nsw-lhd",
 		"url": "https://interactive.guim.co.uk/gis/nsw-lhd.json",
 		"key": "LHN_Code"
-	}],
+	},
+	{
+		"name": "postcodes-2021",
+		"url": "https://interactive.guim.co.uk/gis/POA_2021.json",
+		"key": "POA_CODE21"
+	}
+	],
 
 	init: () => {
 

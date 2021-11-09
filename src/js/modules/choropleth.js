@@ -15,7 +15,7 @@ export class Choropleth {
 
         this.boundaries = boundaries
 
-        this.boundaryID = id
+        
 
         this.places = places
 
@@ -79,6 +79,7 @@ export class Choropleth {
 
         this.database.topoKey = Object.keys( this.boundaries.objects )[0]
 
+        this.boundaryID = Object.keys( this.boundaries.objects[this.database.topoKey].geometries[0].properties)[0]
         /*
         Merge the row data from the Googledoc data table to its corresponding boundary
         */
