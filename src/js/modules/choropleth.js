@@ -7,15 +7,13 @@ import Ractive from 'ractive'
 
 export class Choropleth {
 
-	constructor(data, boundaries, id, places) {
+	constructor(data, boundaries, overlay, places) {
         console.log(places)
         var self = this
 
         this.database = data
 
         this.boundaries = boundaries
-
-        
 
         this.places = places
 
@@ -30,6 +28,9 @@ export class Choropleth {
         */
 
         this.database.keys = Object.keys( this.database.data[0] )
+        console.log(this.database.keys)
+
+        this.id = this.database.keys[0]
 
         /*
         Remove the ID column which is going to be used to map 
@@ -37,7 +38,7 @@ export class Choropleth {
         boundaries in the topojson
         */
 
-        this.database.keys = this.database.keys.filter(key => key !== 'id')
+        this.database.keys = this.database.keys.filter(key => key !== this.id)
 
         /*
         Specify if the graphic requires a dropdown menu
@@ -86,7 +87,7 @@ export class Choropleth {
 
         this.boundaries.objects[this.database.topoKey].geometries.forEach( item => {
 
-            item.properties = {...item.properties, ...self.database.data.find((datum) => datum.id === item.properties[self.boundaryID])}
+            item.properties = {...item.properties, ...self.database.data.find((datum) => datum[self.id] === item.properties[self.boundaryID])}
 
         });
 

@@ -95,20 +95,31 @@ const app = {
 
 	processor: (data) => {
 
-		let boundary = app.topojson.find((datum) => datum.name === data.settings[0].boundary)
+		let boundary_url = data.settings[0].boundary
+		let overlay_url = null
+		if (data.settings[0].overlay) {
+			if (data.settings[0].overlay != "") {
+				overlay_url = data.settings[0].overlay
+			}
+			else {
+				overlay_url = null
+			}
+		}
 		let place = data.settings[0].place
 
 		place = (place===undefined) ? 'au' : place ;
 
-		console.log(place)
+		// console.log(place)
 
-		console.log(boundary)
-		Promise.all([
-            d3.json(`<%= path %>/assets/places_${place}.json`)
-        ])
-        .then((places) =>  {
-            app.gis(data, boundary.url, boundary.key, places[0])
-        });
+		// console.log(boundary)
+		// Promise.all([
+  //           d3.json(`<%= path %>/assets/places_${place}.json`)
+  //       ])
+  //       .then((places) =>  {
+            
+  //       });
+
+  		app.gis(data, boundary_url, overlay_url, place)
 
 	},
 
@@ -126,14 +137,29 @@ const app = {
 
 	},
 
-	gis: (data, url, id, places) => {
+	gis: (data, boundary_url, overlay_url, place) => {
 
-        Promise.all([
-            d3.json(url),
-        ])
+		if (overlay_url) {
+			Promise.all([
+            	d3.json(boundary_url),
+            	d3.json(overlay_url),
+            	d3.json(`<%= path %>/assets/places_${place}.json`)
+        		])
         .then((resp) =>  {
-            new Choropleth(data, resp[0], id, places)
+            new Choropleth(data, resp[0], resp[1], resp[2])
         });
+		}
+
+		else {
+			Promise.all([
+            	d3.json(boundary_url),
+            	d3.json(`<%= path %>/assets/places_${place}.json`)
+        		])
+        .then((resp) =>  {
+            new Choropleth(data, resp[0], null, resp[2])
+        });
+		}
+       
 
 	}
 
