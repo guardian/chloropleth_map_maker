@@ -118,23 +118,23 @@ export class Choropleth {
 
         this.database.centreLat = -28
         
-        if (self.database.mapping[0].centreLat) {
-            this.database.centreLat = +self.database.mapping[0].centreLat;
-        }
+        // if (self.database.mapping[0].centreLat) {
+        //     this.database.centreLat = +self.database.mapping[0].centreLat;
+        // }
         
         this.database.centreLon = 135
 
-        if (self.database.mapping[0].centreLat) {
-            this.database.centreLon = +self.database.mapping[0].centreLon;
-        }
+        // if (self.database.mapping[0].centreLat) {
+        //     this.database.centreLon = +self.database.mapping[0].centreLon;
+        // }
         
         // rename this to zoomLevel later
 
         this.database.zoomScale = null
         
-        if (self.database.mapping[0].zoomScale) {
-            this.database.zoomScale = +self.database.mapping[0].zoomScale;
-        }
+        // if (self.database.mapping[0].zoomScale) {
+        //     this.database.zoomScale = +self.database.mapping[0].zoomScale;
+        // }
 
 
         /*
@@ -164,6 +164,10 @@ export class Choropleth {
             template: template,
         })
 
+        this.createMap()
+
+        this.resizer()
+
         this.ractive.observe('currentIndex', function(index) {
 
             self.database.currentIndex = index
@@ -178,9 +182,7 @@ export class Choropleth {
 
         });
 
-        this.createMap()
-
-        this.resizer()
+        
 
     }
 
@@ -197,6 +199,7 @@ export class Choropleth {
                 to = window.setTimeout(function() {
                     self.zoomLevel = 1
                     self.createMap()
+                    self.updateMap()
                 }, 500)
             }
         })
@@ -710,7 +713,7 @@ export class Choropleth {
         var path = d3.geoPath().projection(self.projection);
 
         var graticule = d3.geoGraticule();
-
+        console.log("this",this)
         this.zoom = d3.zoom().scaleExtent([1, 100]).on("zoom", zoomed);
 
         d3.select("#mapContainer svg").remove();
@@ -807,6 +810,14 @@ export class Choropleth {
             .on("mouseover", tooltipIn)
             .on("mouseout", tooltipOut)
         
+        if (self.width > 480) {
+             geoLayers.append("path")
+            .attr("class", "mesh")
+            .attr("stroke-width", 0.5)
+            .attr("d", path(topojson.mesh(self.boundaries, self.boundaries.objects[self.database.topoKey])));
+        }    
+
+        
         if (this.overlay) {
             geoLayers.append("g").selectAll("path").data(topojson.feature(self.overlay, self.overlay.objects[self.overlayTopoKey]).features).enter().append("path")
             .attr("class", "overlay")
@@ -815,7 +826,7 @@ export class Choropleth {
             .attr("stroke-width", 1)
             .attr("stroke", "#000")
             .on("mouseover", passThru)
-            .on("mouseout", passThru)
+            .on("mouseout", tooltipOut)
             // .on("click", () => {console.log("overlay clicked")})
         } 
 
@@ -844,12 +855,7 @@ export class Choropleth {
             }
               
 
-        if (self.width > 480) {
-            features.append("path")
-            .attr("class", "mesh")
-            .attr("stroke-width", 0.5)
-            .attr("d", path(topojson.mesh(self.boundaries, self.boundaries.objects[self.database.topoKey])));
-        }
+        
 
         var placeLabelThreshold = 3
 
@@ -1079,6 +1085,21 @@ export class Choropleth {
 
         d3.selectAll(`.${self.database.topoKey}`).transition("changeFill")
             .attr("fill", (d) => { return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' })
+
+        var newCentreLat = +self.database.mapping[self.database.currentIndex].centreLat
+        var newCentreLon = +self.database.mapping[self.database.currentIndex].centreLon
+        var point = self.projection([newCentreLon, newCentreLat])
+        var zoomScale = +self.database.mapping[self.database.currentIndex].zoomScale
+
+        if (newCentreLon) {
+             console.log(newCentreLat, newCentreLon, zoomScale, self.projection(newCentreLon))
+
+            d3.select("#mapContainer svg").transition().duration(750).call(
+              self.zoom.transform,
+              d3.zoomIdentity.translate(self.width / 2, self.height / 2).scale(zoomScale).translate(-point[0], -point[1])
+            );
+        }
+       
 
     }
 	
