@@ -118,23 +118,23 @@ export class Choropleth {
 
         this.database.centreLat = -28
         
-        // if (self.database.mapping[0].centreLat) {
-        //     this.database.centreLat = +self.database.mapping[0].centreLat;
-        // }
+        if (self.database.mapping[0].centreLat) {
+            this.database.centreLat = +self.database.mapping[0].centreLat;
+        }
         
         this.database.centreLon = 135
 
-        // if (self.database.mapping[0].centreLat) {
-        //     this.database.centreLon = +self.database.mapping[0].centreLon;
-        // }
+        if (self.database.mapping[0].centreLat) {
+            this.database.centreLon = +self.database.mapping[0].centreLon;
+        }
         
         // rename this to zoomLevel later
 
         this.database.zoomScale = null
         
-        // if (self.database.mapping[0].zoomScale) {
-        //     this.database.zoomScale = +self.database.mapping[0].zoomScale;
-        // }
+        if (self.database.mapping[0].zoomScale) {
+            this.database.zoomScale = +self.database.mapping[0].zoomScale;
+        }
 
 
         /*
@@ -512,13 +512,12 @@ export class Choropleth {
 
             self.keySvg.append("text")
                 .attr("x", 10)
-                .attr("text-anchor", "middle")
                 .attr("y", height)
                 .attr("class", "keyLabel").text(self.toolbelt.niceNumber(this.min))  
 
             self.keySvg.append("text")
                 .attr("x", self.keyWidth + keyLeftMargin)
-                .attr("text-anchor", "middle")
+                .attr("text-anchor", "end")
                 .attr("y", height)
                 .attr("class", "keyLabel").text(self.toolbelt.niceNumber(this.max))      
 
