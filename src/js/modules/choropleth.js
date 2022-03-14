@@ -7,8 +7,11 @@ import Ractive from 'ractive'
 
 export class Choropleth {
 
+
 	constructor(data, boundaries, overlay, places) {
         // console.log(places)
+
+
         var self = this
 
         this.database = data
@@ -23,7 +26,25 @@ export class Choropleth {
 
         this.places = places
 
-        // console.log(this.places)
+        if (this.database.settings[0].filter!="") {
+
+            let filters = this.database.settings[0].filter.split(",")
+
+            filters = filters.map(item => item.trim())
+
+            if (filters.length == 2) {
+
+                let features = places.features.filter(item => {
+
+                    return item.properties[filters[0]] == filters[1]
+                    
+                })
+
+                this.places.features = features
+
+            }
+
+        }
 
         this.database.currentIndex = 0
 
@@ -146,7 +167,7 @@ export class Choropleth {
 
         this.database.zoomOn = (self.isMobile) ? false : true ;
 
-        this.isAndroidApp = (window.location.origin === "file://" && /(android)/i.test(navigator.userAgent) ) ? true : false ;  
+        this.isAndroidApp = (window.location.origin === "file://" && /(android)/i.test(navigator.userAgent) ) ? true : false ; 
 
         this.ractivate()
 
@@ -335,7 +356,7 @@ export class Choropleth {
         }
 
         var output = `Scale type: ${this.scaleType}\nColours: ${self.keyColors}\nThresholds: ${self.thresholds}\nMin: ${this.min}\nMax: ${this.max}\nMedian: ${this.median}\nMean: ${this.mean}\n\n------------------`
-        console.log(output)
+
     }
 
     keygen() {
@@ -360,7 +381,6 @@ export class Choropleth {
         this.svgWidth = 300
 
 
-        // console.log(this.keyWidth)
         if (this.svgWidth > this.width - 10) {
             this.svgWidth = this.width - 10
         }
@@ -670,8 +690,6 @@ export class Choropleth {
             placeLabelThreshold = 1
         }
 
-        // console.log("zoom", self.zoomLevel)
-
         d3.selectAll(`.labels`)
             .style("display", (d) => { 
 
@@ -701,8 +719,6 @@ export class Choropleth {
         var active = d3.select(null);
 
         var scaleFactor = 1;
-
-        // console.log(self.database.centreLat, self.database.centreLon, self.database.zoomScale)
 
         self.projection = d3.geoMercator()
             .center([self.database.centreLon, self.database.centreLat])
@@ -766,8 +782,11 @@ export class Choropleth {
             .attr("class", "graticule")
             .attr("d", path);
 
+
         // console.log("topoKey",self.database.topoKey)    
         
+          // features.append("g").selectAll("path").data(topojson.feature(self.boundaries, self.boundaries.objects[self.database.topoKey]).features).enter().append("path")
+          //   .attr("class", `_${self.database.topoKey} mapArea`)
 
         var geoLayers = features.append("g")
                             .attr("id", "geoLayers")
@@ -971,6 +990,7 @@ export class Choropleth {
 
             d3.select(".tooltip").style("visibility", "visible");
 
+
             if (d.properties[self.database.currentKey]===0) {
                 d.properties[self.database.currentKey] = "0";
                 d3.select("#tooltip").html(self.toolbelt.mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties}))
@@ -1082,7 +1102,7 @@ export class Choropleth {
 
         var self = this
 
-        d3.selectAll(`.${self.database.topoKey}`).transition("changeFill")
+        d3.selectAll(`._${self.database.topoKey}`).transition("changeFill")
             .attr("fill", (d) => { return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' })
 
         var newCentreLat = +self.database.mapping[self.database.currentIndex].centreLat
