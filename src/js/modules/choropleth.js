@@ -109,7 +109,19 @@ export class Choropleth {
         this.database.topoKey = Object.keys( this.boundaries.objects )[0]
 
         this.boundaryID = Object.keys( this.boundaries.objects[this.database.topoKey].geometries[0].properties)[0]
-        // console.log(this.boundaryID)
+
+        console.log(this.database.settings[0])
+
+        if ("boundaryID" in this.database.settings[0]) {
+            if (this.database.settings[0].boundaryID!="") {
+
+                this.boundaryID = this.database.settings[0].boundaryID
+            }
+        }
+
+        
+
+        console.log(this.boundaryID)
         if (overlay) {
             this.overlayTopoKey = Object.keys( this.overlay.objects )[0]
             this.overlayID = Object.keys( this.overlay.objects[this.overlayTopoKey].geometries[0].properties)[0]
