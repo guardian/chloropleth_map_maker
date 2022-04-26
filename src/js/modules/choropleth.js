@@ -696,7 +696,7 @@ export class Choropleth {
 
         var self = this
 
-        var placeLabelThreshold = 2
+        var placeLabelThreshold = 1
 
         if (self.width <= 620) {
             placeLabelThreshold = 1
@@ -887,7 +887,7 @@ export class Choropleth {
 
         
 
-        var placeLabelThreshold = 3
+        var placeLabelThreshold = 1
 
         if (self.width <= 620) {
             placeLabelThreshold = 1
@@ -1114,7 +1114,7 @@ export class Choropleth {
 
         var self = this
 
-        d3.selectAll(`._${self.database.topoKey}`).transition("changeFill")
+        d3.selectAll(`.${self.database.topoKey}`).transition("changeFill")
             .attr("fill", (d) => { return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' })
 
         var newCentreLat = +self.database.mapping[self.database.currentIndex].centreLat
