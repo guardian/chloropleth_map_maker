@@ -145,6 +145,18 @@ const app = {
 			}
 		}
 
+		let basemap_url = null
+		if (data.settings[0].basemap) {
+			if (data.settings[0].basemap != "") {
+				basemap_url = data.settings[0].basemap
+			}
+			else {
+				basemap_url = null
+			}
+		}
+
+
+
 		// let boundary = app.topojson.find((datum) => datum.name === data.settings[0].boundary)
 		
 		let place = data.settings[0].place
@@ -162,7 +174,7 @@ const app = {
             
   //       });
 
-  		app.gis(data, boundary_url, overlay_url, place)
+  		app.gis(data, boundary_url, overlay_url, basemap_url, place)
 
 		// Promise.all([
   //           d3.json(`<%= path %>/assets/places_${place}.json`)
@@ -188,28 +200,45 @@ const app = {
 
 	},
 
-	gis: (data, boundary_url, overlay_url, place) => {
+	gis: (data, boundary_url, overlay_url, basemap_url, place) => {
 
-		if (overlay_url) {
-			Promise.all([
-            	d3.json(boundary_url),
-            	d3.json(overlay_url),
-            	d3.json(`<%= path %>/assets/places_${place}.json`)
-        		])
-        .then((resp) =>  {
-            new Choropleth(data, resp[0], resp[1], resp[2])
-        });
-		}
+	
+		Promise.all([
+			d3.json(boundary_url),
+			d3.json(`<%= path %>/assets/places_${place}.json`)
+			])
+		.then((resp) =>  {
+			let boundary = resp[0]
+			let places = resp[1]
+			let overlay = null
+			let basemap = null
 
-		else {
-			Promise.all([
-            	d3.json(boundary_url),
-            	d3.json(`<%= path %>/assets/places_${place}.json`)
-        		])
-        .then((resp) =>  {
-            new Choropleth(data, resp[0], null, resp[1])
-        });
-		}
+
+			new Choropleth(data, resp[0], resp[1], resp[2], resp[3])
+		});
+
+
+		// if (overlay_url) {
+		// 	Promise.all([
+        //     	d3.json(boundary_url),
+        //     	d3.json(overlay_url),
+		// 		d3.json(basemap_url),
+        //     	d3.json(`<%= path %>/assets/places_${place}.json`)
+        // 		])
+        // .then((resp) =>  {
+        //     new Choropleth(data, resp[0], resp[1], resp[2], resp[3])
+        // });
+		// }
+
+		// else {
+		// 	Promise.all([
+        //     	d3.json(boundary_url),
+        //     	d3.json(`<%= path %>/assets/places_${place}.json`)
+        // 		])
+        // .then((resp) =>  {
+        //     new Choropleth(data, resp[0], null, resp[1])
+        // });
+		// }
        
 
 	}

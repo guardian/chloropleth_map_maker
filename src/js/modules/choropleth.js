@@ -6,8 +6,6 @@ import * as topojson from "topojson"
 import Ractive from 'ractive'
 
 export class Choropleth {
-
-
 	constructor(data, boundaries, overlay, places) {
         // console.log(places)
 
@@ -19,7 +17,9 @@ export class Choropleth {
         this.boundaries = boundaries
 
         this.overlay = null
-        
+
+        this.basemap = null
+
         if (overlay) {
             this.overlay = overlay
         }
@@ -92,7 +92,10 @@ export class Choropleth {
             for (let i = 0; i < self.database.keys.length; i++) {
 
                 if (!isNaN(item[self.database.keys[i]])) {
-                    item[self.database.keys[i]] = (item[self.database.keys[i]]!="") ? +item[self.database.keys[i]] : null ;
+                    if (typeof item[self.database.keys[i]] === 'string' || item[self.database.keys[i]] instanceof String) {
+                        item[self.database.keys[i]] = +item[self.database.keys[i]]
+                    }
+                    // item[self.database.keys[i]] = (item[self.database.keys[i]]!="") ? +item[self.database.keys[i]] : null ;
                 }
                 
             }
