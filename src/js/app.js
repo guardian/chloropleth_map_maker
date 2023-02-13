@@ -202,20 +202,36 @@ const app = {
 
 	gis: (data, boundary_url, overlay_url, basemap_url, place) => {
 
-	
-		Promise.all([
-			d3.json(boundary_url),
-			d3.json(`<%= path %>/assets/places_${place}.json`)
-			])
-		.then((resp) =>  {
-			let boundary = resp[0]
-			let places = resp[1]
-			let overlay = null
-			let basemap = null
+		async function doStuff() {
+			let boundaries, overlay, basemap, places = null
+
+			boundaries = await d3.json(boundary_url)
+			places = await d3.json(`<%= path %>/assets/places_${place}.json`)
+
+			if (overlay_url) {
+				overlay = await d3.json(overlay_url)
+			}
+			if (basemap_url) {
+				basemap = await d3.json(basemap_url)
+			}
+			new Choropleth(data, boundaries, overlay, basemap, places)
+		}
+		
+		doStuff()
+
+		// Promise.all([
+		// 	d3.json(boundary_url),
+		// 	d3.json(`<%= path %>/assets/places_${place}.json`)
+		// 	])
+		// .then((resp) =>  {
+		// 	let boundary = resp[0]
+		// 	let places = resp[1]
+		// 	let overlay = null
+		// 	let basemap = null
 
 
-			new Choropleth(data, resp[0], resp[1], resp[2], resp[3])
-		});
+		// 	new Choropleth(data, resp[0], resp[1], resp[2], resp[3])
+		// });
 
 
 		// if (overlay_url) {

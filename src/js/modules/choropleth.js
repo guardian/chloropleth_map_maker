@@ -6,8 +6,8 @@ import * as topojson from "topojson"
 import Ractive from 'ractive'
 
 export class Choropleth {
-	constructor(data, boundaries, overlay, places) {
-        // console.log(places)
+	constructor(data, boundaries, overlay, basemap, places) {
+        console.log(overlay, basemap)
 
 
         var self = this
@@ -16,13 +16,9 @@ export class Choropleth {
 
         this.boundaries = boundaries
 
-        this.overlay = null
+        this.overlay = overlay
 
-        this.basemap = null
-
-        if (overlay) {
-            this.overlay = overlay
-        }
+        this.basemap = basemap
 
         this.places = places
 
@@ -130,6 +126,9 @@ export class Choropleth {
             this.overlayID = Object.keys( this.overlay.objects[this.overlayTopoKey].geometries[0].properties)[0]
         }
         
+        if (basemap) {
+            this.basemapTopoKey = Object.keys( this.basemap.objects )[0]
+        }
 
         /*
         Merge the row data from the Googledoc data table to its corresponding boundary
@@ -193,7 +192,7 @@ export class Choropleth {
         var self = this
 
         this.colourizer()
-        Ractive.DEBUG = /unminified/.test(function(){/*unminified*/});
+        Ractive.DEBUG = false;
         this.ractive = new Ractive({
             el: '#choloropleth',
             data: self.database,
@@ -744,7 +743,8 @@ export class Choropleth {
 
         var graticule = d3.geoGraticule();
         console.log("this",this)
-        this.zoom = d3.zoom().scaleExtent([1, 100]).on("zoom", zoomed);
+        const maxZoom = 300
+        this.zoom = d3.zoom().scaleExtent([1, maxZoom]).on("zoom", zoomed);
 
         d3.select("#mapContainer svg").remove();
 
@@ -805,6 +805,18 @@ export class Choropleth {
 
         var geoLayers = features.append("g")
                             .attr("id", "geoLayers")
+
+        if (this.basemap) {
+            geoLayers.append("g").selectAll("path")
+            .data(topojson.feature(self.basemap, self.basemap.objects[self.basemapTopoKey]).features).enter().append("path")
+            .attr("class", "basemap")
+            .style("fill",'#dcdcdc')
+            .attr("d",path)
+            .attr("stroke-width", 1)
+            .attr("stroke", null)
+            // .on("click", () => {console.log("overlay clicked")})
+        } 
+
 
         geoLayers.append("g").selectAll("path").data(topojson.feature(self.boundaries, self.boundaries.objects[self.database.topoKey]).features).enter().append("path")
             .attr("class", self.database.topoKey + " mapArea")
