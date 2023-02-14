@@ -1,0 +1,19 @@
+  <div class="modal-background">
+    <div class="modal-outer">
+      <div id="about" class="modal">
+        {{#if isApp}}<div class="app_space_bar"></div>{{/if}}
+        <div class="modal-header">
+          <div on-tap='close' class="close"></div>
+        </div>
+        <div class="modal-content">
+
+          <iframe height="700px" title="Colour-coded map showing predicted gentrification increases and decreases in areas of Sydney" src="https://interactive.guim.co.uk/embed/iframeable/2019/03/choropleth_map_maker/proto/html/index.html?key=1mhe6TDkTFRyocNnlPeszOHgufH41k0atrJekn4tgecM&modal=true" style="width: 100%; border: none;"></iframe>
+          
+          <a on-tap='close' class="action-button">Close</a>
+
+          <div class="buffer"></div>
+
+        </div>
+      </div>
+    </div>
+  </div>

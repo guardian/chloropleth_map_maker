@@ -1,13 +1,54 @@
 import { Toolbelt } from '../modules/toolbelt'
 import template from '../../templates/template.html'
+//import modplate from '../../templates/modal.html'
 import * as d3 from "d3"
 import * as topojson from "topojson"
 // Comment out ractive before deploying
 import Ractive from 'ractive'
+//import ractiveFade from 'ractive-transitions-fade'
+import ractiveTap from 'ractive-events-tap'
+//import Modal from '../modules/modal'
+
+function autocomplete(query, arr) {
+
+  let result = []
+
+  if (query.length > 2) { 
+
+    result = arr.filter( (item) => { 
+
+          if (item.meta.toLowerCase().includes(query)) { 
+
+              return true
+
+          } else {
+
+          return false
+
+        }
+
+        })
+
+    result = result.sort(function(a, b) {
+
+      return a.length - b.length;
+
+    });
+
+  } else {
+
+      result = []
+
+  }
+
+  return result
+
+  
+}
 
 export class Choropleth {
-	constructor(data, boundaries, overlay, basemap, places) {
-        console.log(overlay, basemap)
+	constructor(data, boundaries, overlay, basemap, places, modal, key, codes) {
+        //console.log(overlay, basemap)
 
 
         var self = this
@@ -109,7 +150,7 @@ export class Choropleth {
 
         this.boundaryID = Object.keys( this.boundaries.objects[this.database.topoKey].geometries[0].properties)[0]
 
-        console.log(this.database.settings[0])
+        //console.log(this.database.settings[0])
 
         if ("boundaryID" in this.database.settings[0]) {
             if (this.database.settings[0].boundaryID!="") {
@@ -120,7 +161,7 @@ export class Choropleth {
 
         
 
-        console.log(this.boundaryID)
+        //console.log(this.boundaryID)
         if (overlay) {
             this.overlayTopoKey = Object.keys( this.overlay.objects )[0]
             this.overlayID = Object.keys( this.overlay.objects[this.overlayTopoKey].geometries[0].properties)[0]
@@ -179,9 +220,23 @@ export class Choropleth {
 
         this.isMobile = self.toolbelt.mobileCheck()
 
-        this.database.zoomOn = (self.isMobile) ? false : true ;
+        this.database.zoomOn = true //(self.isMobile) ? false : true ;
 
-        this.isAndroidApp = (window.location.origin === "file://" && /(android)/i.test(navigator.userAgent) ) ? true : false ; 
+        var ua = navigator.userAgent.toLowerCase();
+
+        var isAndroid = ua.indexOf("android") > -1;
+
+        this.database.isAndroidApp = (isAndroid && !modal) ? true : false ;
+
+        this.database.searchBlock = ""
+
+        this.database.autocompleteArray = []
+
+        this.database.key = key
+
+        this.database.codes = codes
+
+        //(window.location.origin === "file://" && /(android)/i.test(navigator.userAgent) || window.location.origin === null && /(android)/i.test(navigator.userAgent) || window.location.origin === "https://mobile.guardianapis.com" && /(android)/i.test(navigator.userAgent) ) ? true : false ; 
 
         this.ractivate()
 
@@ -191,33 +246,120 @@ export class Choropleth {
 
         var self = this
 
-        this.colourizer()
+        
         Ractive.DEBUG = false;
         this.ractive = new Ractive({
+            events: { 
+                tap: ractiveTap
+            },
             el: '#choloropleth',
             data: self.database,
             template: template,
         })
 
-        this.createMap()
+        if (!this.database.isAndroidApp ) {
 
-        this.resizer()
+            this.colourizer()
+           
+            this.createMap()
 
-        this.ractive.observe('currentIndex', function(index) {
+            this.resizer()
 
-            self.database.currentIndex = index
+            this.ractive.observe('currentIndex', function(index) {
 
-            self.database.currentKey = self.database.mapping[index].data
+                self.database.currentIndex = index
 
-            self.colourizer()
+                self.database.currentKey = self.database.mapping[index].data
 
-            self.updateMap()
+                self.colourizer()
 
-            self.keygen()
+                self.updateMap()
+
+                self.keygen()
+
+            });
+
+        }
+
+        //this.ractive.on( 'view', ( context ) => self.showMap());
+
+        
+        this.ractive.observe( 'searchBlock', ( newValue ) => {
+
+
+            if (newValue && newValue.length > 2) {
+
+                self.database.autocompleteArray = autocomplete(newValue, self.database.codes, 'meta')
+
+
+            } else {
+
+               self.database.autocompleteArray = []
+
+            }
+
+            self.ractive.set(self.database)
 
         });
 
-        
+
+        this.ractive.on( 'keydown', function ( event ) {
+
+            if (event.original.keyCode===13) {
+
+                if (self.database.autocompleteArray.length > 0) {
+
+                    self.relocate(self.database.autocompleteArray[0])
+
+                    self.database.autocompleteArray = []
+
+                    self.database.searchBlock = ""
+
+                    self.ractive.set(self.database)
+
+                }
+
+                event.original.preventDefault()
+
+            }
+           
+
+        });
+
+        this.ractive.on('search', (context, data) => {
+
+            self.relocate(data)
+
+            self.database.autocompleteArray = []
+
+            self.database.searchBlock = ""
+
+            self.ractive.set(self.database)
+
+        })
+
+
+    }
+
+    relocate(arr) {
+
+        var self = this
+        var newCentreLat = +arr.latitude
+        var newCentreLon = +arr.longitude
+        var point = self.projection([newCentreLon, newCentreLat])
+        var zoomScale = self.projection.scale()
+
+        //+self.database.mapping[self.database.currentIndex].zoomScale
+
+        if (newCentreLon) {
+            console.log(newCentreLat, newCentreLon, zoomScale, self.projection(newCentreLon))
+
+            d3.select("#mapContainer svg").transition().duration(750).call(
+              self.zoom.transform,
+              d3.zoomIdentity.translate(self.width / 2, self.height / 2).scale(zoomScale).translate(-point[0], -point[1])
+            );
+
+        }
 
     }
 
@@ -742,8 +884,9 @@ export class Choropleth {
         var path = d3.geoPath().projection(self.projection);
 
         var graticule = d3.geoGraticule();
-        console.log("this",this)
+
         const maxZoom = 300
+        
         this.zoom = d3.zoom().scaleExtent([1, maxZoom]).on("zoom", zoomed);
 
         d3.select("#mapContainer svg").remove();
@@ -752,17 +895,8 @@ export class Choropleth {
             .attr("width", self.width)
             .attr("height", self.height)
             .attr("id", "map")
-            .attr("overflow", "hidden")
+            //.attr("overflow", "hidden")
             .on("mousemove", tooltipMove)
-            .on('onTouchStart', function(currentSwiper, e) {
-                if (self.isAndroidApp && window.GuardianJSInterface.registerRelatedCardsTouch) {
-                    window.GuardianJSInterface.registerRelatedCardsTouch(true);
-                }
-            }).on('onTouchEnd', function(currentSwiper, e) {
-                if (self.isAndroidApp && window.GuardianJSInterface.registerRelatedCardsTouch) {
-                    window.GuardianJSInterface.registerRelatedCardsTouch(false);
-                }
-            });
 
         if (self.database.zoomOn) {
 
@@ -1060,11 +1194,17 @@ export class Choropleth {
             self.zoom.scaleBy(svg.transition().duration(750), 1 / 1.5);
         });
 
+        /*
+
         d3.select("#zoomToggle").on("click", function(d) {
             toggleZoom();
         });
 
+        */
+
         self.zoom.scaleBy(svg, self.database.zoomScale);
+
+        /*
 
         function toggleZoom() {
             if (self.database.zoomOn == false) {
@@ -1085,6 +1225,8 @@ export class Choropleth {
                 self.database.zoomOn = false
             }
         }
+
+        */
 
         function zoomed() {
 

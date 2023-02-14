@@ -2,7 +2,8 @@
 @import "fonts";
 @import "palette";
 @import "choropleth";
-
+@import "search";
+//@import "modal";
 
 .element-atom,
 .interactive-atom {
@@ -17,4 +18,37 @@ html, body {
     width: 100%;
     min-height: 300px;
     text-align: center;
+}
+
+.android_box {
+    width:100%;
+    height:0px;
+    padding-bottom:100%;
+    background-size: cover;
+    background-repeat:no-repeat;
+    posiitopn:relative;
+    background-color:lightgrey;
+
+    .button {
+        posiitopn:relative;
+        height: 40px;
+        width: 140px;
+        border-radius: 20px;
+        background-color: #a31a1c;
+        color: #fff;
+        text-align: center;
+        line-height: 40px;
+        font-family: 'Guardian Text Sans Web', TextSans, Arial, sans-serif;
+        cursor: pointer;
+        margin-top: calc(50% - 20px);
+        margin-left: calc(50% - 70px);
+    }
+}
+
+/*----- App fixes -----*/
+.ios, .android {
+    .element-inline, .element-interactive, element-showcase {
+        overflow: scroll;
+        -webkit-overflow-scrolling: touch;
+    }
 }

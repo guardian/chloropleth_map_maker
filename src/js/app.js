@@ -97,15 +97,17 @@ const app = {
 		} else {
 
 			// This is for testing only
-			app.loader("1nvejFO-_jbIH4o6NoQj-xmTOyPvCHYcu-BsG2go_gqQ")
+			app.loader("1mhe6TDkTFRyocNnlPeszOHgufH41k0atrJekn4tgecM", location)
 
 			
-			
+			// https://interactive.guim.co.uk/embed/iframeable/2019/03/choropleth_map_maker_v8/html/index.html?key=1mhe6TDkTFRyocNnlPeszOHgufH41k0atrJekn4tgecM
 		}
 
 	},
 
 	loader: (key, location) => {
+
+		app.key = key
 
         Promise.all([
             d3.json(`https://interactive.guim.co.uk/${location}/${key}.json`)
@@ -202,11 +204,20 @@ const app = {
 
 	gis: (data, boundary_url, overlay_url, basemap_url, place) => {
 
+		const modal = (app.getURLParams('modal') != null ) ? true : false
+
 		async function doStuff() {
 			let boundaries, overlay, basemap, places = null
 
 			boundaries = await d3.json(boundary_url)
 			places = await d3.json(`<%= path %>/assets/places_${place}.json`)
+			let codes = await d3.json(`https://interactive.guim.co.uk/docsdata/1bClr8buuWUaKj01NolwaJy2JR_SR5hKEAjQoJPaGKcw.json`)
+
+			for (const item of codes.sheets.postcodes) {
+
+			  item.meta = `${item.postcode} ${item.place_name}`
+
+			}
 
 			if (overlay_url) {
 				overlay = await d3.json(overlay_url)
@@ -214,7 +225,7 @@ const app = {
 			if (basemap_url) {
 				basemap = await d3.json(basemap_url)
 			}
-			new Choropleth(data, boundaries, overlay, basemap, places)
+			new Choropleth(data, boundaries, overlay, basemap, places, modal, app.key, codes.sheets.postcodes)
 		}
 		
 		doStuff()

@@ -1,5 +1,7 @@
 <div class="interactive-container offset">
 
+    {{#if !isAndroidApp}}
+
     {{#settings}}
     <div class="row">
 
@@ -98,10 +100,26 @@
 
     </div>
 
+    <div class="search__container">
+
+        <div class="searchbar__container">
+
+            <input class="search__input" placeholder="Enter a postcode" type="text" autocapitalize="off" autocomplete="off" autocorrect="off" value='{{searchBlock}}' on-keydown='keydown'>
+
+            <div class="c22__dropdown">
+            {{#each autocompleteArray}}
+            <div class="c22__listitem" on-tap="['search', this]">{{postcode}} | {{place_name}}</div>
+            {{/each}}
+            </div>
+
+        </div>
+
+    </div>
+
     <div id="mapContainer">
             <div id="zoomIn" class="zoomButtons">+</div>
             <div id="zoomOut" class="zoomButtons">–</div>
-            <div id="zoomToggle" class="zoomButtons {{#if zoomOn}}zoomUnlocked{{else}}zoomLocked{{/if}}"></div>
+            <!--div id="zoomToggle" class="zoomButtons {{#if zoomOn}}zoomUnlocked{{else}}zoomLocked{{/if}}"></div-->
        <!--      <div id="tooltip">
                 <div id="mainLayer"></div>
                 <div id="overlay"></div>
@@ -111,23 +129,30 @@
 
     <div class="row notes">
 
-       
-
-            {{#if footnote}}
+        {{#if footnote}}
             <div class="row">
                 {{{footnote}}}
             </div>
-            {{/if}}
+        {{/if}}
 
-            {{#if source}}
-                <div class="row">
-                    <small>Source: {{{source}}}</small>
-                </div>
-            {{/if}}
-
-
+        {{#if source}}
+            <div class="row">
+                <small>Source: {{{source}}}</small>
+            </div>
+        {{/if}}
 
     </div>
 
     {{/settings}}
+
+    {{else}}
+
+    <div class="android_box">
+
+        <a class="button" href="https://interactive.guim.co.uk/embed/iframeable/2019/03/choropleth_map_maker/proto/html/index.html?key={{key}}&modal=true" target="_blank"><div class="states_position">View the map</div></a>
+
+    </div>
+
+    {{/if}}
+
 </div>
