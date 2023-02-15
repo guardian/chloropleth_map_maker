@@ -97,7 +97,7 @@ const app = {
 		} else {
 
 			// This is for testing only
-			app.loader("1mhe6TDkTFRyocNnlPeszOHgufH41k0atrJekn4tgecM", location)
+			app.loader("1exDU0P7xzpeDWX6jXX32I8AMbhZM3GySt1VFIt1Gh1k", location)
 
 			
 			// https://interactive.guim.co.uk/embed/iframeable/2019/03/choropleth_map_maker_v8/html/index.html?key=1mhe6TDkTFRyocNnlPeszOHgufH41k0atrJekn4tgecM

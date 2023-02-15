@@ -1,9 +1,21 @@
-<div class="interactive-container offset">
 
-    {{#if !isAndroidApp}}
+
+<div class="map__wrapper">
+
+
+    {{#if isAndroidApp}}
+
+    <div class="android_box">
+
+        <a class="android_link" href="https://interactive.guim.co.uk/embed/iframeable/2019/03/choropleth_map_maker/proto/html/index.html?key={{key}}&modal=true" target="_blank"><div class="android_button">View the map</div></a>
+
+    </div>
+
+    {{/if}}
+
 
     {{#settings}}
-    <div class="row">
+    <div class="editorial">
 
         {{#if title}}
         <div class="choloropleth_title_block">
@@ -127,7 +139,7 @@
             
     </div>
 
-    <div class="row notes">
+    <div class="editorial notes">
 
         {{#if footnote}}
             <div class="row">
@@ -144,15 +156,5 @@
     </div>
 
     {{/settings}}
-
-    {{else}}
-
-    <div class="android_box">
-
-        <a class="button" href="https://interactive.guim.co.uk/embed/iframeable/2019/03/choropleth_map_maker/proto/html/index.html?key={{key}}&modal=true" target="_blank"><div class="states_position">View the map</div></a>
-
-    </div>
-
-    {{/if}}
 
 </div>

@@ -9,6 +9,9 @@ import Ractive from 'ractive'
 import ractiveTap from 'ractive-events-tap'
 //import Modal from '../modules/modal'
 
+
+console.log("vx")
+
 function autocomplete(query, arr) {
 
   let result = []
@@ -218,9 +221,7 @@ export class Choropleth {
         If the user is on a mobile lock the map by default
         */
 
-        this.isMobile = self.toolbelt.mobileCheck()
-
-        this.database.zoomOn = true //(self.isMobile) ? false : true ;
+        this.database.zoomOn = true
 
         var ua = navigator.userAgent.toLowerCase();
 
@@ -257,11 +258,12 @@ export class Choropleth {
             template: template,
         })
 
-        if (!this.database.isAndroidApp ) {
+        this.colourizer()
+       
+        this.createMap()
 
-            this.colourizer()
-           
-            this.createMap()
+
+        if (!this.database.isAndroidApp ) {
 
             this.resizer()
 
@@ -283,83 +285,93 @@ export class Choropleth {
 
         //this.ractive.on( 'view', ( context ) => self.showMap());
 
+        if (!this.database.isAndroidApp ) {
+
         
-        this.ractive.observe( 'searchBlock', ( newValue ) => {
+            this.ractive.observe( 'searchBlock', ( newValue ) => {
 
 
-            if (newValue && newValue.length > 2) {
+                if (newValue && newValue.length > 2) {
 
-                self.database.autocompleteArray = autocomplete(newValue, self.database.codes, 'meta')
-
-
-            } else {
-
-               self.database.autocompleteArray = []
-
-            }
-
-            self.ractive.set(self.database)
-
-        });
+                    self.database.autocompleteArray = autocomplete(newValue, self.database.codes, 'meta')
 
 
-        this.ractive.on( 'keydown', function ( event ) {
+                } else {
 
-            if (event.original.keyCode===13) {
-
-                if (self.database.autocompleteArray.length > 0) {
-
-                    self.relocate(self.database.autocompleteArray[0])
-
-                    self.database.autocompleteArray = []
-
-                    self.database.searchBlock = ""
-
-                    self.ractive.set(self.database)
+                   self.database.autocompleteArray = []
 
                 }
 
-                event.original.preventDefault()
+                self.ractive.set(self.database)
 
-            }
-           
+            });
 
-        });
 
-        this.ractive.on('search', (context, data) => {
+            this.ractive.on( 'keydown', function ( event ) {
 
-            self.relocate(data)
+                if (event.original.keyCode===13) {
 
-            self.database.autocompleteArray = []
+                    if (self.database.autocompleteArray.length > 0) {
 
-            self.database.searchBlock = ""
+                        self.relocate(self.database.autocompleteArray[0])
 
-            self.ractive.set(self.database)
+                        self.database.autocompleteArray = []
 
-        })
+                        self.database.searchBlock = ""
+
+                        self.ractive.set(self.database)
+
+                    }
+
+                    event.original.preventDefault()
+
+                }
+               
+
+            });
+
+            this.ractive.on('search', (context, data) => {
+
+                self.relocate(data)
+
+                self.database.autocompleteArray = []
+
+                self.database.searchBlock = ""
+
+                self.ractive.set(self.database)
+
+            })
+
+        }
 
 
     }
 
-    relocate(arr) {
+    async relocate(arr) {
+
+        // https://stackoverflow.com/questions/14492284/center-a-map-in-d3-given-a-geojson-object
+
+        // https://observablehq.com/@d3/zoom-to-bounding-box
+
+        //this.database.zoomOn = false
 
         var self = this
-        var newCentreLat = +arr.latitude
-        var newCentreLon = +arr.longitude
-        var point = self.projection([newCentreLon, newCentreLat])
+
+        let bbox = await getJson(`https://interactive.guim.co.uk/embed/aus/2023/01/australian-air-quality/geojson/${arr.postcode}.geojson`)
+
+        console.log("Loaded boundary")
+
+        let [[x0, y0], [x1, y1]] = this.path.bounds(bbox)
+
         var zoomScale = self.projection.scale()
 
-        //+self.database.mapping[self.database.currentIndex].zoomScale
-
-        if (newCentreLon) {
-            console.log(newCentreLat, newCentreLon, zoomScale, self.projection(newCentreLon))
-
-            d3.select("#mapContainer svg").transition().duration(750).call(
-              self.zoom.transform,
-              d3.zoomIdentity.translate(self.width / 2, self.height / 2).scale(zoomScale).translate(-point[0], -point[1])
-            );
-
-        }
+        d3.select("#mapContainer svg").transition().duration(750).call(
+          self.zoom.transform,
+          d3.zoomIdentity
+            .translate(self.width / 2, self.height / 2)
+            .scale(zoomScale) // Math.min(8, 0.9 / Math.max((x1 - x0) / self.width, (y1 - y0) / self.height))
+            .translate(-(x0 + x1) / 2, -(y0 + y1) / 2)
+        );
 
     }
 
@@ -883,6 +895,8 @@ export class Choropleth {
 
         var path = d3.geoPath().projection(self.projection);
 
+        this.path = path
+
         var graticule = d3.geoGraticule();
 
         const maxZoom = 300
@@ -1228,7 +1242,9 @@ export class Choropleth {
 
         */
 
-        function zoomed() {
+        function zoomed(event) {
+
+            console.log()
 
             scaleFactor = d3.event.transform.k;
             d3.selectAll(".mesh").style("stroke-width", 0.5 / d3.event.transform.k + "px");
@@ -1291,4 +1307,8 @@ export class Choropleth {
 
     }
 	
+}
+
+async function getJson(url) {
+  return fetch(`${url}`).then(r => r.json())
 }

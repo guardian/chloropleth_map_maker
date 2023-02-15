@@ -1,6 +1,6 @@
 @import "mq";
 
-.interactive-container {
+.map__wrapper {
 
 	// background: #FFF;
 	max-width:1200px;
@@ -21,6 +21,7 @@
 		position: relative; 
 		width:100%;
 		min-height:300px;
+		touch-action: auto pinch-zoom;
 
 		svg {
 			overflow:scroll;
