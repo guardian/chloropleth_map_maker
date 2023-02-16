@@ -10,7 +10,7 @@ import ractiveTap from 'ractive-events-tap'
 //import Modal from '../modules/modal'
 
 
-console.log("vx")
+console.log("vxo")
 
 function autocomplete(query, arr) {
 
@@ -353,25 +353,52 @@ export class Choropleth {
 
         // https://observablehq.com/@d3/zoom-to-bounding-box
 
+        // https://www.d3indepth.com/geographic/
+
         //this.database.zoomOn = false
 
         var self = this
 
+        d3.select("#suburb").remove()
+
         let bbox = await getJson(`https://interactive.guim.co.uk/embed/aus/2023/01/australian-air-quality/geojson/${arr.postcode}.geojson`)
 
-        console.log("Loaded boundary")
+        if (bbox) {
 
-        let [[x0, y0], [x1, y1]] = this.path.bounds(bbox)
+            let geojson = {
+                "type": "FeatureCollection",
+                "features": [ bbox ]
+            }
 
-        var zoomScale = self.projection.scale()
+            let [[x0, y0], [x1, y1]] = this.path.bounds(geojson)
 
-        d3.select("#mapContainer svg").transition().duration(750).call(
-          self.zoom.transform,
-          d3.zoomIdentity
-            .translate(self.width / 2, self.height / 2)
-            .scale(zoomScale) // Math.min(8, 0.9 / Math.max((x1 - x0) / self.width, (y1 - y0) / self.height))
-            .translate(-(x0 + x1) / 2, -(y0 + y1) / 2)
-        );
+            var svg = d3.select("#mapContainer svg")
+
+            svg.transition().duration(750).call(
+              self.zoom.transform,
+              d3.zoomIdentity
+                .translate(self.width / 2, self.height / 2)
+                .scale(.7 / Math.max((x1 - x0) / self.width, (y1 - y0) / self.height))
+                .translate(-(x0 + x1) / 2, -(y0 + y1) / 2)
+            );
+        
+            svg.append("g")
+            .attr("id","suburb")
+            .selectAll("path")
+            .data(geojson.features)
+            .join("path")
+            .attr("d",self.path)
+            .attr("class", "burbs")
+            .attr("stroke-width", 1)
+            .attr("stroke", "black")
+            .attr("stroke-dasharray", "5,5")
+            .attr("fill", "none")
+
+        } else {
+
+            console.log("Missing postcode")
+
+        }
 
     }
 
@@ -1244,10 +1271,10 @@ export class Choropleth {
 
         function zoomed(event) {
 
-            console.log()
-
             scaleFactor = d3.event.transform.k;
             d3.selectAll(".mesh").style("stroke-width", 0.5 / d3.event.transform.k + "px");
+            d3.selectAll(".burbs").style("stroke-width", 0.5 / d3.event.transform.k + "px").attr("stroke-dasharray", `${2 / d3.event.transform.k }, ${2 / d3.event.transform.k }`)
+            d3.selectAll("#suburb").attr("transform", d3.event.transform);
             features.style("stroke-width", 0.5 / d3.event.transform.k + "px");
             features.selectAll(".overlay").attr("stroke-width", 1 / d3.event.transform.k + "px");
             features.attr("transform", d3.event.transform);
@@ -1310,5 +1337,5 @@ export class Choropleth {
 }
 
 async function getJson(url) {
-  return fetch(`${url}`).then(r => r.json())
+  return fetch(`${url}`).then(r => r.json().catch( () => false))
 }
