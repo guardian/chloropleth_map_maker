@@ -86,6 +86,24 @@ export class Choropleth {
 
         }
 
+        if (this.database.settings[0].search!="") {
+
+            if (this.database.settings[0].search.toLowerCase() == 'true') {
+
+                this.database.displaySearch = true
+
+            } else {
+
+                this.database.displaySearch = false
+
+            }
+
+        } else {
+
+            this.database.displaySearch = false
+            
+        }
+
         this.database.currentIndex = 0
 
         this.zoomLevel = 1
@@ -238,6 +256,7 @@ export class Choropleth {
         this.database.codes = codes
 
         //(window.location.origin === "file://" && /(android)/i.test(navigator.userAgent) || window.location.origin === null && /(android)/i.test(navigator.userAgent) || window.location.origin === "https://mobile.guardianapis.com" && /(android)/i.test(navigator.userAgent) ) ? true : false ; 
+
 
         this.ractivate()
 

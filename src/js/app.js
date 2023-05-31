@@ -96,8 +96,10 @@ const app = {
 
 		} else {
 
+			// https://interactive.guim.co.uk/embed/iframeable/2019/03/choropleth_map_maker_v6/html/index.html?key=oz-230515-suburb-population-densification-map
+
 			// This is for testing only
-			app.loader("1exDU0P7xzpeDWX6jXX32I8AMbhZM3GySt1VFIt1Gh1k", location)
+			app.loader("oz-230515-suburb-population-densification-map", location)
 
 			
 			// https://interactive.guim.co.uk/embed/iframeable/2019/03/choropleth_map_maker_v8/html/index.html?key=1mhe6TDkTFRyocNnlPeszOHgufH41k0atrJekn4tgecM
@@ -106,6 +108,8 @@ const app = {
 	},
 
 	loader: (key, location) => {
+
+		console.log(`https://interactive.guim.co.uk/${location}/${key}.json`)
 
 		app.key = key
 
@@ -207,10 +211,13 @@ const app = {
 		const modal = (app.getURLParams('modal') != null ) ? true : false
 
 		async function doStuff() {
+
 			let boundaries, overlay, basemap, places = null
 
 			boundaries = await d3.json(boundary_url)
+
 			places = await d3.json(`<%= path %>/assets/places_${place}.json`)
+
 			let codes = await d3.json(`https://interactive.guim.co.uk/docsdata/1bClr8buuWUaKj01NolwaJy2JR_SR5hKEAjQoJPaGKcw.json`)
 
 			for (const item of codes.sheets.postcodes) {
@@ -220,14 +227,23 @@ const app = {
 			}
 
 			if (overlay_url) {
+
 				overlay = await d3.json(overlay_url)
+
 			}
+
 			if (basemap_url) {
+
 				basemap = await d3.json(basemap_url)
+
 			}
+
 			new Choropleth(data, boundaries, overlay, basemap, places, modal, app.key, codes.sheets.postcodes)
 		}
 		
+
+
+
 		doStuff()
 
 		// Promise.all([
