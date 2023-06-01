@@ -1,4 +1,5 @@
-import { Toolbelt } from '../modules/toolbelt'
+//import { Toolbelt } from '../modules/toolbelt'
+import { autocomplete, niceNumber, mustache } from '../modules/belt'
 import template from '../../templates/template.html'
 //import modplate from '../../templates/modal.html'
 import * as d3 from "d3"
@@ -12,42 +13,6 @@ import ractiveTap from 'ractive-events-tap'
 
 console.log("vxo")
 
-function autocomplete(query, arr) {
-
-  let result = []
-
-  if (query.length > 2) { 
-
-    result = arr.filter( (item) => { 
-
-          if (item.meta.toLowerCase().includes(query)) { 
-
-              return true
-
-          } else {
-
-          return false
-
-        }
-
-        })
-
-    result = result.sort(function(a, b) {
-
-      return a.length - b.length;
-
-    });
-
-  } else {
-
-      result = []
-
-  }
-
-  return result
-
-  
-}
 
 export class Choropleth {
 	constructor(data, boundaries, overlay, basemap, places, modal, key, codes) {
@@ -106,9 +71,11 @@ export class Choropleth {
 
         this.database.currentIndex = 0
 
+        this.database.locationIndex = 0
+
         this.zoomLevel = 1
 
-        this.toolbelt = new Toolbelt()
+        //this.toolbelt = new Toolbelt()
 
         /*
         Create a set of keys based on the JSON from the Googledoc data table
@@ -140,6 +107,9 @@ export class Choropleth {
             this.database.dropdown = false
 
         }
+
+        this.database.relocate = (self.database.locations.map( (item) => item.data).length > 1) ? true : false ;
+
         
         /*
         Convert all the datum that looks like a number in the data columns to intergers 
@@ -215,22 +185,22 @@ export class Choropleth {
 
         this.database.centreLat = -28
         
-        if (self.database.mapping[0].centreLat) {
-            this.database.centreLat = +self.database.mapping[0].centreLat;
+        if (self.database.locations[0].centreLat) {
+            this.database.centreLat = +self.database.locations[0].centreLat;
         }
         
         this.database.centreLon = 135
 
-        if (self.database.mapping[0].centreLat) {
-            this.database.centreLon = +self.database.mapping[0].centreLon;
+        if (self.database.locations[0].centreLat) {
+            this.database.centreLon = +self.database.locations[0].centreLon;
         }
         
         // rename this to zoomLevel later
 
         this.database.zoomScale = null
         
-        if (self.database.mapping[0].zoomScale) {
-            this.database.zoomScale = +self.database.mapping[0].zoomScale;
+        if (self.database.locations[0].zoomScale) {
+            this.database.zoomScale = +self.database.locations[0].zoomScale;
         }
 
 
@@ -256,7 +226,6 @@ export class Choropleth {
         this.database.codes = codes
 
         //(window.location.origin === "file://" && /(android)/i.test(navigator.userAgent) || window.location.origin === null && /(android)/i.test(navigator.userAgent) || window.location.origin === "https://mobile.guardianapis.com" && /(android)/i.test(navigator.userAgent) ) ? true : false ; 
-
 
         this.ractivate()
 
@@ -299,6 +268,15 @@ export class Choropleth {
                 self.keygen()
 
             });
+
+            this.ractive.observe('locationIndex', function(index) {
+
+                self.database.locationIndex = index
+
+                self.reposMap()
+
+            });
+
 
         }
 
@@ -704,7 +682,7 @@ export class Choropleth {
                     .attr("x", (i + 1 ) * self.keySquare + keyLeftMargin)
                     .attr("text-anchor", "middle")
                     .attr("y", height)
-                    .attr("class", "keyLabel").text(self.toolbelt.niceNumber(d))
+                    .attr("class", "keyLabel").text(niceNumber(d))
                 }
              
             })
@@ -747,13 +725,13 @@ export class Choropleth {
             self.keySvg.append("text")
                 .attr("x", 10)
                 .attr("y", height)
-                .attr("class", "keyLabel").text(self.toolbelt.niceNumber(this.min))  
+                .attr("class", "keyLabel").text(niceNumber(this.min))  
 
             self.keySvg.append("text")
                 .attr("x", self.keyWidth + keyLeftMargin)
                 .attr("text-anchor", "end")
                 .attr("y", height)
-                .attr("class", "keyLabel").text(self.toolbelt.niceNumber(this.max))      
+                .attr("class", "keyLabel").text(niceNumber(this.max))      
 
         }
 
@@ -798,7 +776,7 @@ export class Choropleth {
                 .attr("x", this.keyWidth)
                 .attr("text-anchor", "end")
                 .attr("y", 30)
-                .attr("class", "keyLabel").text(self.toolbelt.niceNumber(this.max))    
+                .attr("class", "keyLabel").text(niceNumber(this.max))    
 
         }
 
@@ -846,7 +824,7 @@ export class Choropleth {
                     .attr("x", (i) * self.keySquare)
                     .attr("text-anchor", "start")
                     .attr("y", height)
-                    .attr("class", "keyLabel").text(self.toolbelt.niceNumber(d))
+                    .attr("class", "keyLabel").text(niceNumber(d))
             })
 
             colRed.forEach(function(d, i) {
@@ -866,7 +844,7 @@ export class Choropleth {
                     .attr("x", (i) * self.keySquare)
                     .attr("text-anchor", "start")
                     .attr("y", height)
-                    .attr("class", "keyLabel").text(self.toolbelt.niceNumber(d))
+                    .attr("class", "keyLabel").text(niceNumber(d))
             }) 
 
             colPurple.forEach(function(d, i) {
@@ -887,7 +865,7 @@ export class Choropleth {
                     .attr("x", (i) * self.keySquare)
                     .attr("text-anchor", "start")
                     .attr("y", height)
-                    .attr("class", "keyLabel").text(self.toolbelt.niceNumber(d))
+                    .attr("class", "keyLabel").text(niceNumber(d))
             })     
 
         }
@@ -1076,7 +1054,7 @@ export class Choropleth {
 
         function passThru(d) {
 
-                var newHtml = self.toolbelt.mustache(self.database.mapping[self.database.currentIndex].overlayTooltip, {...utilities, ...d.properties})
+                var newHtml = mustache(self.database.mapping[self.database.currentIndex].overlayTooltip, {...utilities, ...d.properties})
                 d3.select("#overlay").html(newHtml)
                 var e = d3.event;
 
@@ -1214,7 +1192,7 @@ export class Choropleth {
 
             if (d.properties[self.database.currentKey]===0) {
                 d.properties[self.database.currentKey] = "0";
-                d3.select("#tooltip").html(self.toolbelt.mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties}))
+                d3.select("#tooltip").html(mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties}))
             }
 
             else if (d.properties[self.database.currentKey]===undefined) {
@@ -1225,7 +1203,7 @@ export class Choropleth {
             }
 
             else {
-                d3.select("#tooltip").html((d.properties[self.database.currentKey]===null) ? "No data available" : self.toolbelt.mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties}))    
+                d3.select("#tooltip").html((d.properties[self.database.currentKey]===null) ? "No data available" : mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties}))    
             }
             
         
@@ -1336,6 +1314,38 @@ export class Choropleth {
         d3.selectAll(`.${self.database.topoKey}`).transition("changeFill")
             .attr("fill", (d) => { return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' })
 
+    }
+
+
+    reposMap() {
+
+        var self = this
+
+        var newCentreLat = +self.database.locations[self.database.locationIndex].centreLat
+        var newCentreLon = +self.database.locations[self.database.locationIndex].centreLon
+        var point = self.projection([newCentreLon, newCentreLat])
+        var zoomScale = +self.database.locations[self.database.locationIndex].zoomScale
+
+        if (newCentreLon) {
+             console.log(newCentreLat, newCentreLon, zoomScale, self.projection(newCentreLon))
+
+            d3.select("#mapContainer svg").transition().duration(750).call(
+              self.zoom.transform,
+              d3.zoomIdentity.translate(self.width / 2, self.height / 2).scale(zoomScale).translate(-point[0], -point[1])
+            );
+        }
+       
+
+    }
+
+    /* // Old scool before we split into two dropdown paths... 
+    updateMap() {
+
+        var self = this
+
+        d3.selectAll(`.${self.database.topoKey}`).transition("changeFill")
+            .attr("fill", (d) => { return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' })
+
         var newCentreLat = +self.database.mapping[self.database.currentIndex].centreLat
         var newCentreLon = +self.database.mapping[self.database.currentIndex].centreLon
         var point = self.projection([newCentreLon, newCentreLat])
@@ -1352,6 +1362,8 @@ export class Choropleth {
        
 
     }
+    */
+
 	
 }
 

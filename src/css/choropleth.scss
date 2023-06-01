@@ -176,15 +176,37 @@
 	}
 
 	.col50 {
-		float:left;
-		width:48%;
-		margin-left:1%; 
+
+
+		@include mq($until: tablet) {
+			width:100%;
+			display:inline-block;
+		}
+
+
+		@include mq($from: tablet) {
+			float:left;
+			width:48%;
+			margin-left:1%; 
+		}
+
 	}
 
 	.col33 {
-		float:left;
-		width:32%;
-		margin-left:1%; 
+
+		@include mq($until: tablet) {
+			width:100%;
+			display:inline-block;
+		}
+
+
+		@include mq($from: tablet) {
+			width:32%;
+			margin-left:1%; 
+			float:left;
+		}
+
+
 	}
 
 	.row {

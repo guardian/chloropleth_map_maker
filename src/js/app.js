@@ -1,6 +1,7 @@
 import * as d3 from "d3"
 import { Choropleth } from './modules/choropleth'
 import template from '../templates/template.json'
+import { getURLParams, merge } from './modules/belt'
 
 const app = {
 
@@ -83,11 +84,14 @@ const app = {
 
 	init: () => {
 
-		const key = app.getURLParams('key')
-		var location = app.getURLParams('location')
+		const key = getURLParams('key')
+
+		var location = getURLParams('location')
 		
 		if (!location) {
+
 			location = "docsdata"
+
 		}
 
 		if ( key != null ) {
@@ -96,13 +100,8 @@ const app = {
 
 		} else {
 
-			// https://interactive.guim.co.uk/embed/iframeable/2019/03/choropleth_map_maker_v6/html/index.html?key=oz-230515-suburb-population-densification-map
+			app.loader("1frtIcWKYcnVw8BzAeGZD73cIuAAu13kx9LxJfoVflUE", location)
 
-			// This is for testing only
-			app.loader("oz-230515-suburb-population-densification-map", location)
-
-			
-			// https://interactive.guim.co.uk/embed/iframeable/2019/03/choropleth_map_maker_v8/html/index.html?key=1mhe6TDkTFRyocNnlPeszOHgufH41k0atrJekn4tgecM
 		}
 
 	},
@@ -118,24 +117,12 @@ const app = {
         ])
         .then((results) =>  {
 
-        	var merged = app.combine(template, results[0])
+        	var merged = merge(template, results[0])
 
             app.processor(merged.sheets)
         });
 
 
-	},
-
-	combine: (to, from) => {
-
-	    for (const n in from) {
-	        if (typeof to[n] != 'object') {
-	            to[n] = from[n];
-	        } else if (typeof from[n] == 'object') {
-	            to[n] = app.combine(to[n], from[n]);
-	        }
-	    }
-	    return to;
 	},
 
 	processor: (data) => {
@@ -160,55 +147,18 @@ const app = {
 				basemap_url = null
 			}
 		}
-
-
-
-		// let boundary = app.topojson.find((datum) => datum.name === data.settings[0].boundary)
 		
 		let place = data.settings[0].place
 
 		place = (place===undefined) ? 'au' : place ;
 
-
-		// console.log(place)
-
-		// console.log(boundary)
-		// Promise.all([
-  //           d3.json(`<%= path %>/assets/places_${place}.json`)
-  //       ])
-  //       .then((places) =>  {
-            
-  //       });
-
   		app.gis(data, boundary_url, overlay_url, basemap_url, place)
-
-		// Promise.all([
-  //           d3.json(`<%= path %>/assets/places_${place}.json`)
-  //       ])
-  //       .then((places) =>  {
-  //           app.gis(data, boundary.url, boundary.key, places[0])
-  //       });
-
-
-	},
-
-	getURLParams: (paramName) => {
-
-		const params = window.location.search.substring(1).split("&")
-
-	    for (let i = 0; i < params.length; i++) {
-	    	let val = params[i].split("=");
-		    if (val[0] == paramName) {
-		        return val[1];
-		    }
-		}
-		return null;
 
 	},
 
 	gis: (data, boundary_url, overlay_url, basemap_url, place) => {
 
-		const modal = (app.getURLParams('modal') != null ) ? true : false
+		const modal = (getURLParams('modal') != null ) ? true : false
 
 		async function doStuff() {
 
@@ -241,48 +191,7 @@ const app = {
 			new Choropleth(data, boundaries, overlay, basemap, places, modal, app.key, codes.sheets.postcodes)
 		}
 		
-
-
-
 		doStuff()
-
-		// Promise.all([
-		// 	d3.json(boundary_url),
-		// 	d3.json(`<%= path %>/assets/places_${place}.json`)
-		// 	])
-		// .then((resp) =>  {
-		// 	let boundary = resp[0]
-		// 	let places = resp[1]
-		// 	let overlay = null
-		// 	let basemap = null
-
-
-		// 	new Choropleth(data, resp[0], resp[1], resp[2], resp[3])
-		// });
-
-
-		// if (overlay_url) {
-		// 	Promise.all([
-        //     	d3.json(boundary_url),
-        //     	d3.json(overlay_url),
-		// 		d3.json(basemap_url),
-        //     	d3.json(`<%= path %>/assets/places_${place}.json`)
-        // 		])
-        // .then((resp) =>  {
-        //     new Choropleth(data, resp[0], resp[1], resp[2], resp[3])
-        // });
-		// }
-
-		// else {
-		// 	Promise.all([
-        //     	d3.json(boundary_url),
-        //     	d3.json(`<%= path %>/assets/places_${place}.json`)
-        // 		])
-        // .then((resp) =>  {
-        //     new Choropleth(data, resp[0], null, resp[1])
-        // });
-		// }
-       
 
 	}
 

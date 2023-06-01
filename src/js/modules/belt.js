@@ -64,7 +64,79 @@ export function dateChecker(dt, start, end) {
 
 }
 
+export function getURLParams(paramName) {
 
+  const params = window.location.search.substring(1).split("&")
+
+    for (let i = 0; i < params.length; i++) {
+      let val = params[i].split("=");
+      if (val[0] == paramName) {
+          return val[1];
+      }
+  }
+  return null;
+
+}
+
+export function niceNumber(num) {
+  if ( num > 0 ) {
+  if ( num >= 1000000000 ) { return ( num / 1000000000 ).toFixed(0) + 'bn' }
+  if ( num >= 1000000 ) { return ( num / 1000000 ).toFixed(0) + 'm' }
+  if ( num >= 1000 ) { return ( num / 1000 ).toFixed(0) + 'k' }
+  if (num % 1 != 0) { return num.toFixed(2) }
+  else { return num }
+  }
+
+  if ( num < 0 ) {
+  var posNum = num * -1;
+  if ( posNum > 1000000000 ) return [ "-" + String(( posNum / 1000000000 ).toFixed(1)) + 'bn'];
+  if ( posNum > 1000000 ) return ["-" + String(( posNum / 1000000 ).toFixed(1)) + 'm'];
+  if ( posNum > 1000 ) return ["-" + String(( posNum / 1000 ).toFixed(1)) + 'k'];
+  else { return num }
+  }
+
+  else {
+  return num
+  }
+  
+}
+
+export function autocomplete(query, arr) {
+
+  let result = []
+
+  if (query.length > 2) { 
+
+    result = arr.filter( (item) => { 
+
+          if (item.meta.toLowerCase().includes(query)) { 
+
+              return true
+
+          } else {
+
+          return false
+
+        }
+
+        })
+
+    result = result.sort(function(a, b) {
+
+      return a.length - b.length;
+
+    });
+
+  } else {
+
+      result = []
+
+  }
+
+  return result
+
+  
+}
 
 export function getNextHighestIndex(arr, value) {
 
@@ -312,42 +384,6 @@ export function createElement(element, attribute, inner) {
   return el;
 }
 
-export function autocomplete(query, arr) {
-
-  let result = []
-
-  if (query.length > 2) { 
-
-    result = arr.filter( (item) => { 
-
-	      if (item.meta.toLowerCase().includes(query)) { 
-
-	          return true
-
-	      } else {
-
-          return false
-
-        }
-
-		})
-
-    result = result.sort(function(a, b) {
-
-      return a.length - b.length;
-
-    });
-
-  } else {
-
-      result = []
-
-  }
-
-  return result
-
-  
-}
 
 export async function postData(url = '', data = {}) {
   // Default options are marked with *

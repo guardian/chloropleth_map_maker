@@ -80,7 +80,7 @@
             <div class="row">
 
                 {{#if dropdown}}
-                <div class="selectorBox col50">
+                <div class="selectorBox col33">
 
                     
                     <div class="keyText">Currently showing</div>
@@ -95,9 +95,28 @@
 
                 </div>
                 {{/if}}
+
+
+                {{#if relocate}}
+                <div class="selectorBox col33">
+
+                    
+                    <div class="keyText">Zoom to</div>
+
+                    <select id="locationChooser" value='{{locationIndex}}'>
+                        {{#locations:i}}
+                            <option value='{{i}}'>{{display}}</option>
+                        {{/locations}}
+                    </select>
+                   
+
+
+                </div>
+                {{/if}}
+
                 
                 {{#if key}}
-                <div class="keyBox col50">
+                <div class="keyBox col33">
 
                     <div class="keyText" id="keyText">Key</div>
 
