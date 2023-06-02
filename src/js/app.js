@@ -100,7 +100,7 @@ const app = {
 
 		} else {
 
-			app.loader("1frtIcWKYcnVw8BzAeGZD73cIuAAu13kx9LxJfoVflUE", location)
+			app.loader("oz-230515-suburb-population-densification-map", location)
 
 		}
 

@@ -1,5 +1,5 @@
 //import { Toolbelt } from '../modules/toolbelt'
-import { autocomplete, niceNumber, mustache } from '../modules/belt'
+import { autocomplete, niceNumber, mustache, contains } from '../modules/belt'
 import template from '../../templates/template.html'
 //import modplate from '../../templates/modal.html'
 import * as d3 from "d3"
@@ -184,24 +184,64 @@ export class Choropleth {
         // Defaults to center of Australia, otherwise use set values    
 
         this.database.centreLat = -28
-        
-        if (self.database.locations[0].centreLat) {
-            this.database.centreLat = +self.database.locations[0].centreLat;
-        }
-        
+
         this.database.centreLon = 135
 
-        if (self.database.locations[0].centreLat) {
-            this.database.centreLon = +self.database.locations[0].centreLon;
+        this.database.zoomScale = 0
+
+
+        try {
+
+            if (self.database.mapping.length > 0) {
+
+                let mapArray = Object.keys(self.database.mapping[0])
+
+                if (contains(mapArray, 'centreLat') && contains(mapArray, 'centreLon') && contains(mapArray, 'zoomScale')) {
+
+                    this.database.centreLat = +self.database.mapping[0].centreLat;
+
+                    this.database.centreLon = +self.database.mapping[0].centreLon;
+
+                    this.database.zoomScale = +self.database.mapping[0].zoomScale;
+
+                }
+
+            }
+
+
+            if (self.database.locations.length > 0) {
+
+                let locArray = Object.keys(self.database.locations[0])
+
+                if (contains(locArray, 'centreLat') && contains(locArray, 'centreLon') && contains(locArray, 'zoomScale')) {
+
+                    this.database.centreLat = +self.database.locations[0].centreLat;
+
+                    this.database.centreLon = +self.database.locations[0].centreLon;
+
+                    this.database.zoomScale = +self.database.locations[0].zoomScale;
+
+                }
+
+            }
+
+        } catch (error) {
+            
+          console.log("Add location lat and lng")
+
+          // Expected output: ReferenceError: nonExistentFunction is not defined
+          // (Note: the exact output may be browser-dependent)
         }
+
+
+
+
         
         // rename this to zoomLevel later
 
-        this.database.zoomScale = null
         
-        if (self.database.locations[0].zoomScale) {
-            this.database.zoomScale = +self.database.locations[0].zoomScale;
-        }
+        
+
 
 
         /*
