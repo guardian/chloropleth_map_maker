@@ -1134,6 +1134,13 @@ export class Choropleth {
 
             })
 
+
+        svg.on("click", function() {
+            console.log(self.projection.invert(d3.mouse(this)), self.zoomLevel)
+        })
+
+
+
         this.keygen()
 
         //145.4866862   -22.2187986 145.4866862 -22.2187986
@@ -1308,6 +1315,8 @@ export class Choropleth {
 
         function zoomed(event) {
 
+
+
             scaleFactor = d3.event.transform.k;
             d3.selectAll(".mesh").style("stroke-width", 0.5 / d3.event.transform.k + "px");
             d3.selectAll(".burbs").style("stroke-width", 0.5 / d3.event.transform.k + "px").attr("stroke-dasharray", `${2 / d3.event.transform.k }, ${2 / d3.event.transform.k }`)
@@ -1327,6 +1336,10 @@ export class Choropleth {
             clearTimeout(document.body.data)
 
             var now = d3.event.transform.k;
+
+            //console.log(self.projection.invert([d3.event.transform.y, d3.event.transform.x]))
+
+
 
             document.body.data = setTimeout( function() { 
 
