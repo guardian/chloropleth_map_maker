@@ -134,9 +134,9 @@ export class Toolbelt {
 
             if ( num < 0 ) {
                 var posNum = num * -1;
-                if ( posNum > 1000000000 ) return [ "-" + String(( posNum / 1000000000 ).toFixed(1)) + 'bn'];
-                if ( posNum > 1000000 ) return ["-" + String(( posNum / 1000000 ).toFixed(1)) + 'm'];
-                if ( posNum > 1000 ) return ["-" + String(( posNum / 1000 ).toFixed(1)) + 'k'];
+                if ( posNum >= 1000000000 ) return [ "-" + String(( posNum / 1000000000 ).toFixed(1)) + 'bn'];
+                if ( posNum >= 1000000 ) return ["-" + String(( posNum / 1000000 ).toFixed(1)) + 'm'];
+                if ( posNum >= 1000 ) return ["-" + String(( posNum / 1000 ).toFixed(1)) + 'k'];
                 else { return num }
             }
 
@@ -148,18 +148,18 @@ export class Toolbelt {
 
     keyNumber(num) {
                 if ( num > 0 ) {
-                if ( num > 1000000000 ) { return ( num / 1000000000 ).toFixed(1) + 'bn' }
-                else if ( num > 1000000 ) { return ( num / 1000000 ).toFixed(1) + 'm' }
-                else if ( num > 1000 ) { return ( num / 1000000 ).toFixed(1) + 'k' }
+                if ( num >= 1000000000 ) { return ( num / 1000000000 ).toFixed(1) + 'bn' }
+                else if ( num >= 1000000 ) { return ( num / 1000000 ).toFixed(1) + 'm' }
+                else if ( num >= 1000 ) { return ( num / 1000000 ).toFixed(1) + 'k' }
                 else if (num % 1 != 0) { return num.toFixed(2) }
                 else { return num.toLocaleString() }
             }
 
             if ( num < 0 ) {
                 var posNum = num * -1;
-                if ( posNum > 1000000000 ) return [ "-" + String(( posNum / 1000000000 ).toFixed(1)) + 'bn'];
-                if ( posNum > 1000000 ) return ["-" + String(( posNum / 1000000 ).toFixed(1)) + 'm'];
-                if ( posNum > 1000 ) return ["-" + String(( posNum / 1000 ).toFixed(1)) + 'k'];
+                if ( posNum >= 1000000000 ) return [ "-" + String(( posNum / 1000000000 ).toFixed(1)) + 'bn'];
+                if ( posNum >= 1000000 ) return ["-" + String(( posNum / 1000000 ).toFixed(1)) + 'm'];
+                if ( posNum >= 1000 ) return ["-" + String(( posNum / 1000 ).toFixed(1)) + 'k'];
                 else { return num.toLocaleString() }
             }
 

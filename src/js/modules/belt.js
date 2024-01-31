@@ -80,18 +80,18 @@ export function getURLParams(paramName) {
 
 export function niceNumber(num) {
   if ( num > 0 ) {
-  if ( num >= 1000000000 ) { return ( num / 1000000000 ).toFixed(0) + 'bn' }
-  if ( num >= 1000000 ) { return ( num / 1000000 ).toFixed(0) + 'm' }
-  if ( num >= 1000 ) { return ( num / 1000 ).toFixed(0) + 'k' }
+  if ( num >= 1000000000 ) { return ( num / 1000000000 ).toFixed(1) + 'bn' }
+  if ( num >= 1000000 ) { return ( num / 1000000 ).toFixed(1) + 'm' }
+  if ( num >= 1000 ) { return ( num / 1000 ).toFixed(1) + 'k' }
   if (num % 1 != 0) { return num.toFixed(2) }
   else { return num }
   }
 
   if ( num < 0 ) {
   var posNum = num * -1;
-  if ( posNum > 1000000000 ) return [ "-" + String(( posNum / 1000000000 ).toFixed(1)) + 'bn'];
-  if ( posNum > 1000000 ) return ["-" + String(( posNum / 1000000 ).toFixed(1)) + 'm'];
-  if ( posNum > 1000 ) return ["-" + String(( posNum / 1000 ).toFixed(1)) + 'k'];
+  if ( posNum >= 1000000000 ) return [ "-" + String(( posNum / 1000000000 ).toFixed(1)) + 'bn'];
+  if ( posNum >= 1000000 ) return ["-" + String(( posNum / 1000000 ).toFixed(1)) + 'm'];
+  if ( posNum >= 1000 ) return ["-" + String(( posNum / 1000 ).toFixed(1)) + 'k'];
   else { return num }
   }
 

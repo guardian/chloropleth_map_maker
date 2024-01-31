@@ -120,7 +120,10 @@ export class Choropleth {
             for (let i = 0; i < self.database.keys.length; i++) {
 
                 if (!isNaN(item[self.database.keys[i]])) {
-                    if (typeof item[self.database.keys[i]] === 'string' || item[self.database.keys[i]] instanceof String) {
+                    if (item[self.database.keys[i]] === "") {
+                        item[self.database.keys[i]] = null
+                    }
+                    else if (typeof item[self.database.keys[i]] === 'string' || item[self.database.keys[i]] instanceof String) {
                         item[self.database.keys[i]] = +item[self.database.keys[i]]
                     }
                     // item[self.database.keys[i]] = (item[self.database.keys[i]]!="") ? +item[self.database.keys[i]] : null ;
@@ -139,6 +142,7 @@ export class Choropleth {
 
         this.database.topoKey = Object.keys( this.boundaries.objects )[0]
 
+        console.log("topokey",this.database.topoKey)
         this.boundaryID = Object.keys( this.boundaries.objects[this.database.topoKey].geometries[0].properties)[0]
 
         //console.log(this.database.settings[0])
@@ -172,6 +176,7 @@ export class Choropleth {
 
         });
 
+        console.log(boundaries)      
         /*
         Specify the current key
         */
@@ -699,7 +704,6 @@ export class Choropleth {
                 .attr("height", "40px")
                 .attr("id", "keySvg")
 
-
             this.keyColors.forEach(function(d, i) {
 
                 self.keySvg.append("rect")
@@ -1082,8 +1086,9 @@ export class Choropleth {
             .attr("d",path)
             .attr("stroke-width", 1)
             .attr("stroke", "#000")
-            .on("mouseover", passThru)
-            .on("mouseout", tooltipOut)
+            .style("pointer-events", "none")
+            // .on("mouseover", passThru)  
+            // .on("mouseout", tooltipOut)
             // .on("click", () => {console.log("overlay clicked")})
         } 
 
