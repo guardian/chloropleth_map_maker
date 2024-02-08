@@ -151,16 +151,16 @@
 
     {{/if}}
 
-    <div id="mapContainer">
+    
+
+        <div id="mapContainer">
             <div id="zoomIn" class="zoomButtons">+</div>
             <div id="zoomOut" class="zoomButtons">–</div>
-            <!--div id="zoomToggle" class="zoomButtons {{#if zoomOn}}zoomUnlocked{{else}}zoomLocked{{/if}}"></div-->
-       <!--      <div id="tooltip">
-                <div id="mainLayer"></div>
-                <div id="overlay"></div>
-            </div> -->
-            
-    </div>
+            {{#if displayOverlay}}
+            <div class="android_box"></div>
+            {{/if}}
+        </div>
+
 
     <div class="editorial notes">
 
@@ -173,6 +173,12 @@
         {{#if source}}
             <div class="row">
                 <small>Source: {{{source}}}</small>
+            </div>
+        {{/if}}
+
+        {{#if version}}
+            <div class="row">
+                <small>{{version}}</small>
             </div>
         {{/if}}
 

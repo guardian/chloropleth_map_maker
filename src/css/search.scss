@@ -25,7 +25,7 @@
 
 
     .c22__dropdown {
-        width: calc(100% - 50px);
+        width: calc(100% - 20px);
         box-sizing: border-box;
         border-top: none;
         position: relative;
@@ -63,5 +63,5 @@
 
     .c22__listitem:hover {
         background-color: #2b618c;
-        color:black;
+        color:white;
     }

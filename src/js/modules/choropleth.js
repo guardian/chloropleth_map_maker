@@ -11,7 +11,7 @@ import ractiveTap from 'ractive-events-tap'
 //import Modal from '../modules/modal'
 
 
-console.log("vxo")
+const wait = ms => new Promise(res => setTimeout(res, ms));
 
 
 export class Choropleth {
@@ -260,6 +260,8 @@ export class Choropleth {
 
         var isAndroid = ua.indexOf("android") > -1;
 
+        var isAndroidApp = (window.location.origin === "file://" && isAndroid || window.location.origin === null && isAndroid || window.location.origin === "https://mobile.guardianapis.com" && isAndroid ) ? true : false ; 
+
         this.database.isAndroidApp = (isAndroid && !modal) ? true : false ;
 
         this.database.searchBlock = ""
@@ -270,7 +272,9 @@ export class Choropleth {
 
         this.database.codes = codes
 
-        //(window.location.origin === "file://" && /(android)/i.test(navigator.userAgent) || window.location.origin === null && /(android)/i.test(navigator.userAgent) || window.location.origin === "https://mobile.guardianapis.com" && /(android)/i.test(navigator.userAgent) ) ? true : false ; 
+        this.database.displayOverlay = false
+
+        this.database.version = "" //`${window.location.origin}`
 
         this.ractivate()
 
@@ -335,12 +339,16 @@ export class Choropleth {
 
                 if (newValue && newValue.length > 2) {
 
+                    self.database.displayOverlay = true
+
                     self.database.autocompleteArray = autocomplete(newValue, self.database.codes, 'meta')
 
 
                 } else {
 
-                   self.database.autocompleteArray = []
+                    self.database.displayOverlay = false
+
+                    self.database.autocompleteArray = []
 
                 }
 
@@ -355,13 +363,20 @@ export class Choropleth {
 
                     if (self.database.autocompleteArray.length > 0) {
 
-                        self.relocate(self.database.autocompleteArray[0])
 
                         self.database.autocompleteArray = []
 
                         self.database.searchBlock = ""
 
                         self.ractive.set(self.database)
+
+                        self.ractive.set('displayOverlay', true)
+
+                        self.relocate(self.database.autocompleteArray[0])
+
+
+
+                        //setTimeout(self.displayMap(), 2000);
 
                     }
 
@@ -374,18 +389,38 @@ export class Choropleth {
 
             this.ractive.on('search', (context, data) => {
 
-                self.relocate(data)
-
                 self.database.autocompleteArray = []
 
                 self.database.searchBlock = ""
 
                 self.ractive.set(self.database)
 
+                self.ractive.set('displayOverlay', true)
+
+                self.relocate(data)
+
+                //setTimeout(self.displayMap(), 2000);
+
             })
 
         }
 
+
+    }
+
+    displayMap() {
+
+        var self = this
+
+        console.log("Display map")
+
+        self.database.displayOverlay = false
+
+        self.database.autocompleteArray = []
+
+        self.database.searchBlock = ""
+
+        self.ractive.set(self.database)
 
     }
 
@@ -436,9 +471,15 @@ export class Choropleth {
             .attr("stroke-dasharray", "5,5")
             .attr("fill", "none")
 
+            await wait(1500);
+
+             self.ractive.set('displayOverlay', false)
+
         } else {
 
             console.log("Missing postcode")
+
+            self.ractive.set('displayOverlay', false)
 
         }
 
@@ -1041,6 +1082,8 @@ export class Choropleth {
 
         if (self.database.zoomOn) {
 
+            console.log("Zoom")
+
             svg.call(self.zoom)
 
         }
@@ -1207,6 +1250,7 @@ export class Choropleth {
                 el.dispatchEvent(e2);
 
                 this.style.pointerEvents = prev;
+
             }
               
 
@@ -1231,6 +1275,13 @@ export class Choropleth {
                 return (d.properties.scalerank - placeLabelThreshold < self.zoomLevel) ? "block" : "none"
 
             })
+
+
+        svg.on("click", function() {
+            console.log(self.projection.invert(d3.mouse(this)), self.zoomLevel)
+        })
+
+
 
         this.keygen()
 
@@ -1406,6 +1457,10 @@ export class Choropleth {
 
         function zoomed(event) {
 
+
+            console.log("Zoom it")
+
+
             scaleFactor = d3.event.transform.k;
             d3.selectAll(".mesh").style("stroke-width", 0.5 / d3.event.transform.k + "px");
             d3.selectAll(".burbs").style("stroke-width", 0.5 / d3.event.transform.k + "px").attr("stroke-dasharray", `${2 / d3.event.transform.k }, ${2 / d3.event.transform.k }`)
@@ -1428,6 +1483,10 @@ export class Choropleth {
             clearTimeout(document.body.data)
 
             var now = d3.event.transform.k;
+
+            //console.log(self.projection.invert([d3.event.transform.y, d3.event.transform.x]))
+
+
 
             document.body.data = setTimeout( function() { 
 
@@ -1461,6 +1520,8 @@ export class Choropleth {
     reposMap() {
 
         var self = this
+
+        console.log("Repo")
 
         var newCentreLat = +self.database.locations[self.database.locationIndex].centreLat
         var newCentreLon = +self.database.locations[self.database.locationIndex].centreLon
