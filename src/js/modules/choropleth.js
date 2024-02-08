@@ -139,7 +139,7 @@ export class Choropleth {
         /*
         Get the name of the topojson object
         */
-
+        console.log("data",this.database.data)
         this.database.topoKey = Object.keys( this.boundaries.objects )[0]
 
         console.log("topokey",this.database.topoKey)
@@ -483,6 +483,13 @@ export class Choropleth {
 
         this.max = d3.max( self.database.data, (item) => item[self.database.currentKey]);
 
+        if (this.thresholds) {
+            if (this.thresholds.length == 2) {
+                this.min = this.thresholds[0]
+                this.max = this.thresholds[1]
+            }
+        }
+
         this.median = d3.median( self.database.data, (item) => item[self.database.currentKey]);
 
         this.mean = d3.mean( self.database.data, (item) => item[self.database.currentKey]);
@@ -594,6 +601,56 @@ export class Choropleth {
 
         var output = `Scale type: ${this.scaleType}\nColours: ${self.keyColors}\nThresholds: ${self.thresholds}\nMin: ${this.min}\nMax: ${this.max}\nMedian: ${this.median}\nMean: ${this.mean}\n\n------------------`
 
+    }
+
+    getFill(d) {
+        var self = this
+        if (self.scaleType != "election"  && self.scaleType != "swing") {
+
+            if (self.scaleType == "threshold" ) {
+                
+                if (d.properties[self.database.currentKey] === 0 | d.properties[self.database.currentKey] === "0") {
+                    return "#FFFFFF";
+                }
+
+                else if (d.properties[self.database.currentKey]==null) {
+                    return '#dcdcdc';
+                } 
+                
+                else if (typeof d.properties[self.database.currentKey] == 'string') {
+                    return "url(#crosshatch)"
+                }
+
+                else {
+                    return self.color(d.properties[self.database.currentKey])
+                }
+                
+            }
+
+            else {
+                if (d.properties[self.database.currentKey]==null) {
+                    return '#dcdcdc';
+                } 
+
+                else if (typeof d.properties[self.database.currentKey] == 'string') {
+                    return "url(#crosshatch)"
+                } 
+                else {
+                    return self.color(d.properties[self.database.currentKey])
+                }      
+            }
+            
+        }
+
+        // Special electoral maps
+
+        else if (self.scaleType === "election" ) {
+            return (d.properties.Margin!=null) ? self.color(d.properties.Margin, d.properties['Notional incumbent']) : '#dcdcdc' ;   
+        }
+
+        else if (self.scaleType === "swing" ) {
+            return (d.properties["2PPSwing"]!=null) ? self.color(d.properties["2PPSwing"], d.properties['Prediction']) : '#dcdcdc' ;   
+        }
     }
 
     keygen() {
@@ -937,6 +994,8 @@ export class Choropleth {
             .attr("y", (d) => self.projection([d.properties.longitude, d.properties.latitude])[1])
     }
 
+
+
     createMap() {
 
         var self = this
@@ -998,6 +1057,21 @@ export class Choropleth {
             .attr("d", "M 0 0 12 6 0 12 3 6")
             .style("fill", "black");
 
+        var crosshatch = svg.append("defs")
+            .append("pattern")
+              .attr("id", "crosshatch")
+              .attr("patternUnits", "userSpaceOnUse")
+              .attr("width", 10)
+              .attr("height", 10);
+          
+        // Append lines to the pattern for crosshatching
+
+        crosshatch.append("path")
+              .attr("d", "M-1,1 l2,-2 M0,10 l10,-10 M9,11 l2,-2")
+              .attr("stroke", "black")
+              .attr("stroke-width", 1)
+              .attr("shape-rendering", "auto");      
+
         var tooltip = d3.select("#mapContainer").append("div")
             .attr("class", "tooltip")
             .style("position", "absolute")
@@ -1037,33 +1111,52 @@ export class Choropleth {
         geoLayers.append("g").selectAll("path").data(topojson.feature(self.boundaries, self.boundaries.objects[self.database.topoKey]).features).enter().append("path")
             .attr("class", self.database.topoKey + " mapArea")
             .attr("fill", function(d) {
+                self.getFill(d)
 
-                if (self.scaleType != "election"  && self.scaleType != "swing") {
+                // Normal scales that aren't electoral maps
 
-                    if (self.scaleType == "threshold" ) {
-                        if (d.properties[self.database.currentKey] === 0 | d.properties[self.database.currentKey] === "0") {
-                            return "#FFFFFF";
-                        }
+                // if (self.scaleType != "election"  && self.scaleType != "swing") {
 
-                        else {
-                            return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : '#dcdcdc' ;    
-                        }
+                //     if (self.scaleType == "threshold" ) {
                         
-                    }
+                //         if (d.properties[self.database.currentKey] === 0 | d.properties[self.database.currentKey] === "0") {
+                //             return "#FFFFFF";
+                //         }
 
-                    else {
-                        return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : '#dcdcdc' ;    
-                    }
+                //         else if (d.properties[self.database.currentKey]==null) {
+                //             return '#dcdcdc';
+                //         } 
+                        
+                //         else if (typeof d.properties[self.database.currentKey] == 'string') {
+                //             console.log(d.properties.CED_NAME21, typeof d.properties[self.database.currentKey])
+                //             console.log('yeh')
+                //             return '#dcdcdc';
+                //         }
+
+                //         else {
+                //             console.log(d.properties.CED_NAME21, typeof d.properties[self.database.currentKey])
+                //             console.log('yeh2')
+                //             return self.color(d.properties[self.database.currentKey])
+                //         }
+                        
+                //     }
+
+                //     else {
+                //         console.log("nah")
+                //         return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : '#dcdcdc' ;    
+                //     }
                     
-                }
+                // }
 
-                else if (self.scaleType === "election" ) {
-                    return (d.properties.Margin!=null) ? self.color(d.properties.Margin, d.properties['Notional incumbent']) : '#dcdcdc' ;   
-                }
+                // // Special electoral maps
 
-                else if (self.scaleType === "swing" ) {
-                    return (d.properties["2PPSwing"]!=null) ? self.color(d.properties["2PPSwing"], d.properties['Prediction']) : '#dcdcdc' ;   
-                }
+                // else if (self.scaleType === "election" ) {
+                //     return (d.properties.Margin!=null) ? self.color(d.properties.Margin, d.properties['Notional incumbent']) : '#dcdcdc' ;   
+                // }
+
+                // else if (self.scaleType === "swing" ) {
+                //     return (d.properties["2PPSwing"]!=null) ? self.color(d.properties["2PPSwing"], d.properties['Prediction']) : '#dcdcdc' ;   
+                // }
 
             })
             .attr("d",path)
@@ -1324,6 +1417,9 @@ export class Choropleth {
                 return (d['properties']['scalerank'] - 3 < d3.event.transform.k) ? "block" : "none" ;
             })
 
+            d3.select('#crosshatch')
+                .attr('patternTransform', 'scale(' + 1 / d3.event.transform.k + ')');
+
             features.selectAll(".placeText")
                 .style("font-size", 0.8 / d3.event.transform.k + "rem")
                 .attr("dx", 5 / d3.event.transform.k)
@@ -1353,11 +1449,11 @@ export class Choropleth {
     }
 
     updateMap() {
-
+        console.log("update map")
         var self = this
 
         d3.selectAll(`.${self.database.topoKey}`).transition("changeFill")
-            .attr("fill", (d) => { return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : 'lightgrey' })
+            .attr("fill", (d) => self.getFill(d))
 
     }
 
