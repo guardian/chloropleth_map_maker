@@ -114,15 +114,16 @@
                 </div>
                 {{/if}}
 
-                
-                {{#if key}}
-                <div class="keyBox col33">
+                {{#if showKey}}
+                    {{#if key}}
+                    <div class="keyBox col33">
 
-                    <div class="keyText" id="keyText">Key</div>
+                        <div class="keyText" id="keyText">Key</div>
 
-                    <div id="keyContainer"></div>
+                        <div id="keyContainer"></div>
 
-                </div>
+                    </div>
+                    {{/if}}
                 {{/if}}
 
             </div>

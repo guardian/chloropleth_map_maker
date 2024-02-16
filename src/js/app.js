@@ -122,7 +122,6 @@ const app = {
             app.processor(merged.sheets)
         });
 
-
 	},
 
 	processor: (data) => {
@@ -150,14 +149,24 @@ const app = {
 		
 		let place = data.settings[0].place
 
-		place = (place===undefined) ? 'au' : place ;
+		if (place == "") {
+			if (boundary_url == 'https://interactive.guim.co.uk/gis/world_110m.json') {
+				place = 'world'
+			}
 
+			else {
+				place = 'au'
+			}
+
+		}
+		
   		app.gis(data, boundary_url, overlay_url, basemap_url, place)
 
 	},
 
 	gis: (data, boundary_url, overlay_url, basemap_url, place) => {
 
+		console.log("place", place)
 		const modal = (getURLParams('modal') != null ) ? true : false
 
 		async function doStuff() {
@@ -166,7 +175,9 @@ const app = {
 
 			boundaries = await d3.json(boundary_url)
 
-			places = await d3.json(`<%= path %>/assets/places_${place}.json`)
+			if (place) {
+				places = await d3.json(`<%= path %>/assets/places_${place}.json`)
+			}
 
 			let codes = await d3.json(`https://interactive.guim.co.uk/docsdata/1bClr8buuWUaKj01NolwaJy2JR_SR5hKEAjQoJPaGKcw.json`)
 
@@ -188,7 +199,7 @@ const app = {
 
 			}
 
-			new Choropleth(data, boundaries, overlay, basemap, places, modal, app.key, codes.sheets.postcodes)
+			new Choropleth(data, boundaries, overlay, basemap, places, modal, app.key, codes.sheets.postcodes, place)
 		}
 		
 		doStuff()

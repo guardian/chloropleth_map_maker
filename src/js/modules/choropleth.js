@@ -15,7 +15,7 @@ const wait = ms => new Promise(res => setTimeout(res, ms));
 
 
 export class Choropleth {
-	constructor(data, boundaries, overlay, basemap, places, modal, key, codes) {
+	constructor(data, boundaries, overlay, basemap, places, modal, key, codes, place) {
         //console.log(overlay, basemap)
 
 
@@ -30,6 +30,8 @@ export class Choropleth {
         this.basemap = basemap
 
         this.places = places
+
+        this.place = place
 
         if (this.database.settings[0].filter!="") {
 
@@ -75,6 +77,26 @@ export class Choropleth {
 
         this.zoomLevel = 1
 
+        this.database.showKey = true
+
+        // Remove this when we can do a settings.json merge like in superyacht
+
+
+        if ("showKey" in self.database.mapping[0]) {
+            if (self.database.mapping[0]['showKey'] != "") {
+                this.database.showKey = self.database.mapping[0]['showKey'] == "TRUE" ? true : false;
+            }
+        }
+
+        this.database.showLabels = true
+
+        if ("showLabels" in self.database.mapping[0]) {
+            if (self.database.mapping[0]['showLabels'] != "") {
+                this.database.showLabels = self.database.mapping[0]['showLabels'] == "TRUE" ? true : false;
+            }
+        }
+
+        console.log("showLabels", this.database.showLabels)
         //this.toolbelt = new Toolbelt()
 
         /*
@@ -602,6 +624,7 @@ export class Choropleth {
 
         } else if (this.scaleType === "ordinal") {
 
+            console.log(self.thresholds, self.keyColors)
             // this.domain = [self.min, self.max]
 
             this.color = d3.scaleOrdinal().domain(self.thresholds).range(self.keyColors)
@@ -668,8 +691,22 @@ export class Choropleth {
                 
             }
 
-            else {
+            if (self.scaleType == "ordinal" ) {
                 if (d.properties[self.database.currentKey]==null) {
+                    console.log("yeh yeh")
+                    return '#dcdcdc';
+                } 
+                else {
+                   
+                    return self.color(d.properties[self.database.currentKey])
+                }      
+
+            }    
+
+            else {
+
+                if (d.properties[self.database.currentKey]==null) {
+                    console.log("yeh yeh")
                     return '#dcdcdc';
                 } 
 
@@ -677,6 +714,7 @@ export class Choropleth {
                     return "url(#crosshatch)"
                 } 
                 else {
+                   
                     return self.color(d.properties[self.database.currentKey])
                 }      
             }
@@ -1027,7 +1065,7 @@ export class Choropleth {
         d3.selectAll(`.labels`)
             .style("display", (d) => { 
 
-                return (d.properties.scalerank - placeLabelThreshold < self.zoomLevel) ? "block" : "none"
+                return (d.properties.scalerank - placeLabelThreshold < self.zoomLevel -1) ? "block" : "none"
 
             })
             .style("font-size", (d) => { return 11 / self.zoomLevel + "px"})
@@ -1054,11 +1092,15 @@ export class Choropleth {
 
         var active = d3.select(null);
 
-        var scaleFactor = 1;
+        var scaleFactor = 0.85;
+
+        if (self.place == "world") {
+            scaleFactor = 0.17
+        }
 
         self.projection = d3.geoMercator()
             .center([self.database.centreLon, self.database.centreLat])
-            .scale(self.width * 0.85)
+            .scale(self.width * scaleFactor)
             .translate([self.width / 2, self.height / 2])
 
         var path = d3.geoPath().projection(self.projection);
@@ -1262,7 +1304,8 @@ export class Choropleth {
             placeLabelThreshold = 1
         }
 
-        features.selectAll("text")
+        if (self.database.showLabels) {
+            features.selectAll("text")
             .data(self.places.features)
             .enter()
             .append("text")
@@ -1272,9 +1315,11 @@ export class Choropleth {
             .attr("class","labels")
             .style("display", (d) => { 
 
-                return (d.properties.scalerank - placeLabelThreshold < self.zoomLevel) ? "block" : "none"
+                return (d.properties.scalerank - placeLabelThreshold < self.zoomLevel - 1) ? "block" : "none"
 
             })
+        }
+       
 
 
         svg.on("click", function() {
