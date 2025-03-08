@@ -50,7 +50,7 @@
     "webpack-stream": "5.0.0"
   },
   "dependencies": {
-    "d3": "^5.9.2",
+    "d3": "^7.8.2",
     "gulp-rename": "^1.2.2",
     "gulp-replace": "^0.6.1",
     "lodash": "^4.17.21",
