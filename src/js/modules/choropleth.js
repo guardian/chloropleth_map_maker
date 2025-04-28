@@ -33,6 +33,18 @@ export class Choropleth {
 
         this.place = place
 
+        // Add CSS style for highlighted paths if it doesn't exist
+        if (!document.querySelector('#choropleth-highlight-style')) {
+            const style = document.createElement('style');
+            style.id = 'choropleth-highlight-style';
+            style.textContent = `
+                .mapArea.highlighted {
+                    opacity: 0.5;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
         if (this.database.settings[0].filter!="") {
 
             let filters = this.database.settings[0].filter.split(",")
@@ -693,7 +705,6 @@ export class Choropleth {
 
             if (self.scaleType == "ordinal" ) {
                 if (d.properties[self.database.currentKey]==null) {
-                    console.log("yeh yeh")
                     return '#dcdcdc';
                 } 
                 else {
@@ -706,7 +717,6 @@ export class Choropleth {
             else {
 
                 if (d.properties[self.database.currentKey]==null) {
-                    console.log("yeh yeh")
                     return '#dcdcdc';
                 } 
 
@@ -1120,14 +1130,14 @@ export class Choropleth {
             .attr("height", self.height)
             .attr("id", "map")
             //.attr("overflow", "hidden")
-            .on("mousemove", tooltipMove)
+            .on("mousemove", function() {
+                const event = d3.event || window.event;
+                updateTooltipPosition(event);
+            });
 
         if (self.database.zoomOn) {
-
             console.log("Zoom")
-
             svg.call(self.zoom)
-
         }
 
         svg.append("svg:defs").append("svg:marker")
@@ -1164,7 +1174,7 @@ export class Choropleth {
             .style("visibility", "hidden")
             .style("top", "30px")
             .style("left", "55px")
-            .html("<div id='tooltip'></div><div id='overlay'></div>")
+            .html("<div id='overlay'></div><div id='tooltip'></div>")
         
         var features = svg.append("g")
 
@@ -1183,91 +1193,50 @@ export class Choropleth {
 
         if (this.basemap) {
             geoLayers.append("g").selectAll("path")
-            .data(topojson.feature(self.basemap, self.basemap.objects[self.basemapTopoKey]).features).enter().append("path")
+            .data(topojson.feature(self.basemap, self.basemap.objects[this.basemapTopoKey]).features).enter().append("path")
             .attr("class", "basemap")
             .style("fill",'#dcdcdc')
             .attr("d",path)
             .attr("stroke-width", 1)
             .attr("stroke", null)
-            // .on("click", () => {console.log("overlay clicked")})
         } 
 
 
-        geoLayers.append("g").selectAll("path").data(topojson.feature(self.boundaries, self.boundaries.objects[self.database.topoKey]).features).enter().append("path")
+        geoLayers.append("g").selectAll("path").data(topojson.feature(self.boundaries, self.boundaries.objects[this.database.topoKey]).features).enter().append("path")
             .attr("class", self.database.topoKey + " mapArea")
             .attr("fill", function(d) {
-                self.getFill(d)
-
-                // Normal scales that aren't electoral maps
-
-                // if (self.scaleType != "election"  && self.scaleType != "swing") {
-
-                //     if (self.scaleType == "threshold" ) {
-                        
-                //         if (d.properties[self.database.currentKey] === 0 | d.properties[self.database.currentKey] === "0") {
-                //             return "#FFFFFF";
-                //         }
-
-                //         else if (d.properties[self.database.currentKey]==null) {
-                //             return '#dcdcdc';
-                //         } 
-                        
-                //         else if (typeof d.properties[self.database.currentKey] == 'string') {
-                //             console.log(d.properties.CED_NAME21, typeof d.properties[self.database.currentKey])
-                //             console.log('yeh')
-                //             return '#dcdcdc';
-                //         }
-
-                //         else {
-                //             console.log(d.properties.CED_NAME21, typeof d.properties[self.database.currentKey])
-                //             console.log('yeh2')
-                //             return self.color(d.properties[self.database.currentKey])
-                //         }
-                        
-                //     }
-
-                //     else {
-                //         console.log("nah")
-                //         return (d.properties[self.database.currentKey]!=null) ? self.color(d.properties[self.database.currentKey]) : '#dcdcdc' ;    
-                //     }
-                    
-                // }
-
-                // // Special electoral maps
-
-                // else if (self.scaleType === "election" ) {
-                //     return (d.properties.Margin!=null) ? self.color(d.properties.Margin, d.properties['Notional incumbent']) : '#dcdcdc' ;   
-                // }
-
-                // else if (self.scaleType === "swing" ) {
-                //     return (d.properties["2PPSwing"]!=null) ? self.color(d.properties["2PPSwing"], d.properties['Prediction']) : '#dcdcdc' ;   
-                // }
-
+                return self.getFill(d)
             })
             .attr("d",path)
-            // .on("click", () => {console.log("main layer clicked")})
             .on("mouseover", tooltipIn)
-            .on("mouseout", tooltipOut)
+            .on("mousemove", function(d) {
+                const event = d3.event || window.event;
+                updateTooltipPosition(event);
+            })
+            .on("mouseout", tooltipOut);
         
         if (self.width > 480) {
              geoLayers.append("path")
             .attr("class", "mesh")
             .attr("stroke-width", 0.5)
-            .attr("d", path(topojson.mesh(self.boundaries, self.boundaries.objects[self.database.topoKey])));
+            .attr("d", path(topojson.mesh(self.boundaries, self.boundaries.objects[this.database.topoKey])));
         }    
 
         
         if (this.overlay) {
-            geoLayers.append("g").selectAll("path").data(topojson.feature(self.overlay, self.overlay.objects[self.overlayTopoKey]).features).enter().append("path")
+            geoLayers.append("g").selectAll("path")
+            .data(topojson.feature(self.overlay, self.overlay.objects[this.overlayTopoKey]).features)
+            .enter()
+            .append("path")
             .attr("class", "overlay")
-            .style("fill","transparent")
-            .attr("d",path)
+            .style("fill", "transparent")
+            .attr("d", path)
             .attr("stroke-width", 1)
             .attr("stroke", "#000")
-            .style("pointer-events", "none")
-            // .on("mouseover", passThru)  
-            // .on("mouseout", tooltipOut)
-            // .on("click", () => {console.log("overlay clicked")})
+            .style("pointer-events", "all")
+            .on("mouseover", passThru)
+            .on("mousemove", passThru)
+            .on("mouseout", tooltipOut);
         } 
 
         // geoLayers
@@ -1275,28 +1244,116 @@ export class Choropleth {
         //     .on("mouseout", tooltipOut)
 
 
-        function passThru(d) {
+        function passThru(d, i, nodes) {
+            // Get the current event
+            const event = d3.event || window.event;
+            
+            // Store the overlay data
+            var overlayData = d;
+            
+            // Temporarily disable pointer events on this element
+            var prev = this.style.pointerEvents;
+            this.style.pointerEvents = 'none';
+            
+            // Get the element below
+            var element = document.elementFromPoint(event.clientX, event.clientY);
+            
+            // Restore pointer events immediately to prevent mouse event issues
+            this.style.pointerEvents = prev;
+            
+            // If we found an element and it's a map area
+            if (element && element.classList.contains('mapArea')) {
+                // Remove highlight from all paths
+                d3.selectAll('.mapArea').classed('highlighted', false);
+                // Add highlight to current path
+                d3.select(element).classed('highlighted', true);
+                
+                // Get the data from the underlying element
+                var baseData = d3.select(element).datum();
+                
+                // Show combined tooltip
+                d3.select(".tooltip")
+                    .style("visibility", "visible")
+                    .select("#tooltip")
+                    .html(() => {
+                        // Combine data from both layers
+                        let baseHtml = baseData.properties[self.database.currentKey] !== null ? 
+                            mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...baseData.properties}) :
+                            "No data available";
+                            
+                        let overlayHtml = overlayData.properties ? 
+                            mustache(self.database.mapping[self.database.currentIndex].overlayTooltip, {...utilities, ...overlayData.properties}) :
+                            "";
+                            
+                        return `${overlayHtml}<hr style="margin: 5px 0;">${baseHtml}`;
+                    });
 
-                var newHtml = mustache(self.database.mapping[self.database.currentIndex].overlayTooltip, {...utilities, ...d.properties})
-                d3.select("#overlay").html(newHtml)
-                var e = d3.event;
-
-                var prev = this.style.pointerEvents;
-                this.style.pointerEvents = 'none';
-
-                var el = document.elementFromPoint(d3.event.x, d3.event.y);
-
-                var e2 = document.createEvent('MouseEvent');
-                e2.initMouseEvent(e.type,e.bubbles,e.cancelable,e.view, e.detail,e.screenX,e.screenY,e.clientX,e.clientY,e.ctrlKey,e.altKey,e.shiftKey,e.metaKey,e.button,e.relatedTarget);
-
-                el.dispatchEvent(e2);
-
-                this.style.pointerEvents = prev;
-
+                // Update tooltip position
+                updateTooltipPosition(event);
+            } else {
+                // If we're not over a map area, remove all highlights
+                d3.selectAll('.mapArea').classed('highlighted', false);
             }
-              
+            
+            // Prevent event from continuing
+            event.stopPropagation();
+        }
 
-        
+        function updateTooltipPosition(event) {
+            if (!event) return;
+            
+            const containerRect = d3.select("#mapContainer").node().getBoundingClientRect();
+            const relativeX = event.clientX - containerRect.left;
+            const relativeY = event.clientY - containerRect.top;
+            const half = self.width / 2;
+
+            if (relativeX < half) {
+                d3.select(".tooltip").style("left", relativeX + "px");
+            } else {
+                d3.select(".tooltip").style("left", (relativeX - 200) + "px");
+            }
+
+            if (relativeY < (self.height / 2)) {
+                d3.select(".tooltip").style("top", (relativeY + 30) + "px");
+            } else {
+                d3.select(".tooltip").style("top", (relativeY - 120) + "px");
+            }
+        }
+
+        function tooltipOut(d) {
+            const event = d3.event || window.event;
+            // Add a small delay to prevent flickering when moving between features
+            setTimeout(() => {
+                // Check if we're still outside both layers
+                var elementAtPoint = document.elementFromPoint(event.clientX, event.clientY);
+                if (!elementAtPoint?.classList.contains('mapArea') && 
+                    !elementAtPoint?.classList.contains('overlay')) {
+                    d3.select(".tooltip").style("visibility", "hidden");
+                    // Remove highlight from all paths when truly leaving the map area
+                    d3.selectAll('.mapArea').classed('highlighted', false);
+                }
+            }, 100);
+        }
+
+        function tooltipIn(d) {
+            d3.select(".tooltip").style("visibility", "visible");
+            
+            // Remove highlight from all paths
+            d3.selectAll('.mapArea').classed('highlighted', false);
+            // Add highlight to current path
+            d3.select(this).classed('highlighted', true);
+
+            if (d.properties[self.database.currentKey] === 0) {
+                d.properties[self.database.currentKey] = "0";
+                d3.select("#tooltip").html(mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties}));
+            } else if (d.properties[self.database.currentKey] === undefined) {
+                d3.select("#tooltip").html("No data available");
+            } else {
+                d3.select("#tooltip").html((d.properties[self.database.currentKey] === null) ? 
+                    "No data available" : 
+                    mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties}));
+            }
+        }
 
         var placeLabelThreshold = 1
 
@@ -1360,26 +1417,6 @@ export class Choropleth {
 
         }*/
    
-        function tooltipMove(d) {
-            var leftOffset = 0
-            var rightOffset = 0
-            var mouseX = d3.mouse(this)[0]
-            var mouseY = d3.mouse(this)[1]
-            var half = self.width / 2;
-            if (mouseX < half) {
-                d3.select(".tooltip").style("left", d3.mouse(this)[0] + "px");
-            } else if (mouseX >= half) {
-                d3.select(".tooltip").style("left", (d3.mouse(this)[0] - 200) + "px");
-            }
-
-            if (mouseY < (self.height / 2)) {
-                d3.select(".tooltip").style("top", (d3.mouse(this)[1] + 30) + "px");
-            } else if (mouseY >= (self.height / 2)) {
-                d3.select(".tooltip").style("top", (d3.mouse(this)[1] - 120) + "px");
-            }
-            
-        }
-
         var utilities = {
 
             commas: function(num) {
@@ -1416,47 +1453,6 @@ export class Choropleth {
             }
 
         }
-
-        function tooltipIn(d) {
-
-            // console.log(d)
-
-            d3.select(".tooltip").style("visibility", "visible");
-
-
-            if (d.properties[self.database.currentKey]===0) {
-                d.properties[self.database.currentKey] = "0";
-                d3.select("#tooltip").html(mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties}))
-            }
-
-            else if (d.properties[self.database.currentKey]===undefined) {
-
-                
-                d3.select("#tooltip").html("No data available")
-
-            }
-
-            else {
-                d3.select("#tooltip").html((d.properties[self.database.currentKey]===null) ? "No data available" : mustache(self.database.mapping[self.database.currentIndex].tooltip, {...utilities, ...d.properties}))    
-            }
-            
-        
-        }
-
-        function tooltipOut(d) {
-            d3.select(".tooltip").style("visibility", "hidden");
-        }
-
-        // function overlayTooltipIn(d) {
-        //     console.log("click")
-        //     // d3.select(".tooltip").style("visibility", "visible");
-            
-        // }
-
-        // function overlayTooltipOut(d) {
-        //    d3.select("#overlay").html("")
-        // }
-
 
         d3.select("#zoomIn").on("click", function(d) {
             self.zoom.scaleBy(svg.transition().duration(750), 1.5);
