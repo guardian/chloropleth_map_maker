@@ -47,6 +47,18 @@ export class Toolbelt {
         return a.indexOf(b) > -1;
     }
 
+    splitArray(arrStr) {
+        // Remove whitespace, brackets, quotes and apostrophes
+        arrStr = arrStr.replace(/[\s\[\]'"']/g, '');
+        
+        let result = arrStr.replace(/[\s\[\]'"']/g, '');
+
+        result = result.split(',').map(item => item.trim());
+        // Split by comma and trim each element
+        return result;
+    }
+
+
     // Returns an array of items that match items in another array, where 'a' is an array and 'b' is a search string or an array of multiple search strings
     match_array(a, b) {
 

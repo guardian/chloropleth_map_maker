@@ -1,5 +1,5 @@
-//import { Toolbelt } from '../modules/toolbelt'
-import { autocomplete, niceNumber, mustache, contains } from '../modules/belt'
+
+import { autocomplete, niceNumber, mustache, contains, splitArray } from '../modules/belt'
 import template from '../../templates/template.html'
 //import modplate from '../../templates/modal.html'
 import * as d3 from "d3"
@@ -550,7 +550,7 @@ export class Choropleth {
 
         this.database.key = (this.scaleType != "election" && this.scaleType != "swing") ? true : false ;
 
-        this.keyColors = self.database.mapping[self.database.currentIndex].colours.split(",");
+        this.keyColors = splitArray(self.database.mapping[self.database.currentIndex].colours);
 
         this.thresholds = self.database.mapping[self.database.currentIndex].values.split(","); //self.database.key.map( (item) => item.value);
 
@@ -572,11 +572,11 @@ export class Choropleth {
         this.range = self.database.data.map( (item) => item[self.database.currentKey]);
 
         if (this.scaleType === "threshold") {
-
-            this.domain = self.thresholds
-
-            this.color = d3.scaleThreshold().domain(self.thresholds).range(self.keyColors)
-
+            let thresholds2 = this.thresholds.slice(1, -1); // Remove first and last elements
+            console.log("thresholds2", thresholds2)
+            console.log("keyColors", self.keyColors)
+            this.domain = thresholds2;
+            this.color = d3.scaleThreshold().domain(thresholds2).range(self.keyColors)
         }
 
         else if (this.scaleType === "election") {
@@ -867,13 +867,13 @@ export class Choropleth {
 
                 // I keep changing this between removing the last figure and not removing it and I can't remember why
 
-                if (i != threshLen) {
+                
                     self.keySvg.append("text")
-                    .attr("x", (i + 1 ) * self.keySquare + keyLeftMargin)
+                    .attr("x", (i) * self.keySquare + keyLeftMargin)
                     .attr("text-anchor", "middle")
                     .attr("y", height)
                     .attr("class", "keyLabel").text(niceNumber(d))
-                }
+                
              
             })
 

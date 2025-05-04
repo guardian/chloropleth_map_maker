@@ -78,6 +78,17 @@ export function getURLParams(paramName) {
 
 }
 
+export function splitArray(arrStr) {
+  // Remove whitespace, brackets, quotes and apostrophes
+  arrStr = arrStr.replace(/[\s\[\]'"']/g, '');
+  
+  let result = arrStr.replace(/[\s\[\]'"']/g, '');
+
+  result = result.split(',').map(item => item.trim());
+  // Split by comma and trim each element
+  return result;
+}
+
 export function niceNumber(num) {
   if ( num > 0 ) {
   if ( num >= 1000000000 ) { return ( num / 1000000000 ).toFixed(1) + 'bn' }
